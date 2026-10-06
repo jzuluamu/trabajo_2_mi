@@ -1,7 +1,7 @@
 # F1-A · Dominio y casos de uso
 
-- **Rama:** `feature/F1A-dominio-casos-de-uso` · **Estado:** ⏳ Pendiente
-- **Dueño:** _(nombre)_
+- **Rama:** `feature/F1A-dominio-casos-de-uso` · **Estado:** ✅ Lista (pendiente de revisión)
+- **Dueño:** Daniela Zuluaga
 - **Lea antes:** [F1 (general)](F1-red-cobertura.md), [02-modelo-de-grafo](../02-modelo-de-grafo.md), [03-api](../03-api.md)
 
 ## Objetivo
@@ -86,10 +86,58 @@ Use la red demo ([02](../02-modelo-de-grafo.md#red-de-demostración-seedred_demo
   - con `replace=False`, una conexión que referencia un nodo existente es válida.
 
 ## Definition of Done
-- [ ] `make test-network` en verde y luego `make test` en verde (cobertura ≥ 85 %; apunte a 100 % en `rules.py` y `use_cases.py`).
-- [ ] `tests/unit/test_frozen_interfaces.py` sin cambios y en verde.
-- [ ] Estado actualizado en este archivo y en `docs/README.md`.
+- [x] `make test-network` en verde y luego `make test` en verde (cobertura ≥ 85 %; apunte a 100 % en `rules.py` y `use_cases.py`).
+- [x] `tests/unit/test_frozen_interfaces.py` sin cambios y en verde.
+- [x] Estado actualizado en este archivo y en `docs/README.md`.
 - [ ] PR con la plantilla completa.
 
 ## Evidencia
-_Pegar aquí el resumen de `make test-network` (pruebas y cobertura de `rules.py` y `use_cases.py`)._
+
+`docker compose -f docker-compose.test.yml run --rm --build network-tests` (equivalente a
+`make test-network`; Docker no traía `make` en esta terminal, así que se usó el comando
+documentado en [07-testing-y-harness.md](../07-testing-y-harness.md)):
+
+```
+==> ruff (lint)
+All checks passed!
+==> ruff (formato)
+48 files already formatted
+==> mypy (tipos)
+Success: no issues found in 47 source files
+==> bandit (seguridad)
+==> pip-audit (CVEs)
+No known vulnerabilities found
+==> pytest
+tests/integration/test_migrations.py .                                   [  0%]
+tests/unit/api/test_dependencies.py ..                                   [  2%]
+tests/unit/api/test_error_mapping.py ..........                          [ 10%]
+tests/unit/application/test_use_cases.py ..............................  [ 33%]
+tests/unit/domain/test_rules.py .....................................    [ 62%]
+tests/unit/infrastructure/test_memory_repository.py ................     [ 74%]
+tests/unit/test_config.py .....                                          [ 78%]
+tests/unit/test_errors.py ....                                           [ 81%]
+tests/unit/test_frozen_interfaces.py ...............                     [ 93%]
+tests/unit/test_health.py ..                                             [ 94%]
+tests/unit/test_security.py .......                                      [100%]
+
+Name                                                      Stmts   Miss Branch BrPart  Cover
+-----------------------------------------------------------------------------------------------
+src/network_service/application/use_cases.py                 97      0     30      0   100%
+src/network_service/domain/rules.py                          39      0     20      0   100%
+TOTAL                                                       416      0     78      0   100%
+Required test coverage of 85% reached. Total coverage: 100.00%
+129 passed in 2.55s
+```
+
+Esta vez corrió también `tests/integration/test_migrations.py` (Postgres real vía
+`docker-compose.test.yml`), ya no se salta. `tests/unit/test_frozen_interfaces.py` quedó sin
+cambios y en verde (15 pruebas).
+
+`make test` completo (`network-tests` arriba + `routing-tests` + `console-tests`, corridos con
+`docker compose -f docker-compose.test.yml run --rm --build <servicio>`):
+
+- **routing-service:** ruff, mypy y bandit en verde; `pytest` → 27 passed, cobertura 100 %.
+- **console:** ruff, mypy y bandit en verde; `pytest` → 11 passed, cobertura 98.65 % (≥ 85 %
+  requerido).
+
+Los 3 servicios terminan en verde: Definition of Done de F1-A cumplida.
