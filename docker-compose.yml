@@ -1,0 +1,87 @@
+# Entorno de demo local. Uso: `make up` (requiere .env, ver `make env`).
+name: serviciocerca
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+
+x-api-keys: &api-keys
+  COORDINATOR_API_KEY: ${COORDINATOR_API_KEY:?Ejecute make env}
+  OPERATOR_API_KEY: ${OPERATOR_API_KEY:?Ejecute make env}
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Ejecute make env}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  db:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Ejecute make env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ejecute make env}
+      POSTGRES_DB: ${POSTGRES_DB:?Ejecute make env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  network-service:
+    <<: *hardening
+    build: { context: ./services/network-service, target: runtime }
+    environment:
+      <<: *api-keys
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["127.0.0.1:${NETWORK_PORT:-8001}:8001"]
+    networks: [backend, frontend]
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck: &py-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8001/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  routing-service:
+    <<: *hardening
+    build: { context: ./services/routing-service, target: runtime }
+    environment:
+      <<: *api-keys
+      NETWORK_SERVICE_URL: http://network-service:8001
+    depends_on:
+      network-service: { condition: service_healthy }
+    ports: ["127.0.0.1:${ROUTING_PORT:-8002}:8002"]
+    networks: [frontend]
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck:
+      <<: *py-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8002/health', timeout=2)"]
+
+  console:
+    <<: *hardening
+    build: { context: ./services/console, target: runtime }
+    environment:
+      NETWORK_SERVICE_URL: http://network-service:8001
+      ROUTING_SERVICE_URL: http://routing-service:8002
+    depends_on:
+      network-service: { condition: service_healthy }
+      routing-service: { condition: service_healthy }
+    ports: ["127.0.0.1:${CONSOLE_PORT:-8501}:8501"]
+    networks: [frontend]
+    healthcheck:
+      <<: *py-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8501/_stcore/health', timeout=2)"]
+
+networks:
+  backend: {}   # solo db <-> network-service
+  frontend: {}  # servicios de aplicación y consola
+
+volumes:
+  pgdata: {}

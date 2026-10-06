@@ -1,0 +1,4 @@
+# Finales de línea LF en todo el repo: evita que scripts .sh fallen en contenedores desde Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

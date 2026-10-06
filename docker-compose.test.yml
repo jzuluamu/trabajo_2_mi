@@ -1,0 +1,11 @@
+# Harness de pruebas: cada servicio corre lint, tipos, seguridad y pytest en su imagen `test`.
+# Uso: `make test` (o `docker compose -f docker-compose.test.yml run --rm --build <servicio>-tests`).
+name: serviciocerca-test
+
+services:
+  network-tests:
+    build: { context: ./services/network-service, target: test }
+  routing-tests:
+    build: { context: ./services/routing-service, target: test }
+  console-tests:
+    build: { context: ./services/console, target: test }

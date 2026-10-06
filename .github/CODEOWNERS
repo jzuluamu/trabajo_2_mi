@@ -1,0 +1,9 @@
+# Dueños por área. Reemplace @jzuluamu por el usuario de GitHub de cada persona (docs/08-colaboracion-git.md).
+*                                                         @jzuluamu
+/services/network-service/                                @jzuluamu
+/services/routing-service/src/routing_service/domain/coverage/       @jzuluamu
+/services/routing-service/src/routing_service/domain/cheapest_path/  @jzuluamu
+/services/console/                                        @jzuluamu
+# Contratos y dominio compartido: requieren revisión de los dueños afectados
+/docs/03-api.md                                           @jzuluamu
+/services/routing-service/src/routing_service/domain/graph.py        @jzuluamu

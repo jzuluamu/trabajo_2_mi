@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    name: harness (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [network, routing, console]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harness del servicio (lint, tipos, seguridad, pruebas)
+        run: make test-${{ matrix.service }}
