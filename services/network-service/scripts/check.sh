@@ -2,8 +2,8 @@
 # Harness de calidad del servicio. Debe terminar en verde para considerar una tarea "hecha".
 set -eu
 
-echo "==> ruff (lint)";        ruff check src tests
-echo "==> ruff (formato)";     ruff format --check src tests
+echo "==> ruff (lint)";        ruff check src tests alembic
+echo "==> ruff (formato)";     ruff format --check src tests alembic
 echo "==> mypy (tipos)";       mypy
 echo "==> bandit (seguridad)"; bandit -q -r src
 echo "==> pip-audit (CVEs)"

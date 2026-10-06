@@ -17,6 +17,14 @@ Cada servicio tiene una imagen Docker `test` (multi-stage) que ejecuta `scripts/
 | Dependencias | `pip-audit` sobre `uv.lock` | hay un CVE conocido |
 | Pruebas | `pytest` + `pytest-cov` | falla una prueba o la cobertura queda **< 85 %** (con ramas) |
 
+En network-service, `make test-network` levanta además un **PostgreSQL efímero** (`network-db` en `docker-compose.test.yml`) y define `TEST_DATABASE_URL`. Así **se ejecutan** las pruebas de `tests/integration/` (migraciones y repositorio SQL). Al terminar, el contenedor se elimina. Sin esa variable, por ejemplo en una corrida local con `uv run pytest`, esas pruebas se omiten (`SKIPPED`).
+
+### ¿Cómo sé que el harness corrió de verdad?
+
+Cada servicio imprime los pasos `==> ruff`, `==> mypy`, `==> bandit`, `==> pip-audit` y `==> pytest`, y luego `N passed` con la cobertura. **Si `make test` imprime solo `OK` sin esos pasos, el harness no se ejecutó.**
+
+Esto ocurrió en la Fase 0: el `Makefile` usaba una regla de patrón `test-%` con targets `.PHONY`, y GNU make no aplica reglas de patrón a targets `.PHONY`. Por eso los targets `test-*` son explícitos. Se verificó también el caso negativo: una prueba rota hace terminar `make test` con `Error 1`.
+
 ## Comandos
 
 ```bash
@@ -32,6 +40,7 @@ Equivalentes sin `make`, por ejemplo en Windows:
 docker compose -f docker-compose.test.yml run --rm --build network-tests
 docker compose -f docker-compose.test.yml run --rm --build routing-tests
 docker compose -f docker-compose.test.yml run --rm --build console-tests
+docker compose -f docker-compose.test.yml down -v
 ```
 
 Para iterar más rápido en local sin Docker (opcional, requiere [uv](https://docs.astral.sh/uv/)):
@@ -45,9 +54,14 @@ cd services/routing-service && uv sync && uv run pytest
 ```
 services/<servicio>/tests/
   conftest.py        variables de entorno de prueba y fixtures (client, headers por rol)
-  unit/              dominio, casos de uso, seguridad y errores, sin red ni BD
-  integration/       API + PostgreSQL (network-service, desde Fase 1) / cliente HTTP falso
+  unit/              dominio, casos de uso, API, seguridad y errores, sin red ni BD
+  integration/       PostgreSQL real (network-service): migraciones y repositorio SQL
+  contract/          (network-service) suite que toda implementación del repositorio debe pasar
 ```
+
+En network-service hay dos pruebas que **vigilan la base congelada de F1**:
+- `tests/contract/repository_contract.py`: comportamiento exigido a cualquier `NetworkRepository` (LSP);
+- `tests/unit/test_frozen_interfaces.py`: firmas de reglas y casos de uso que usan los otros carriles.
 
 Lineamientos:
 - **Algoritmos:** grafos pequeños construidos a mano y resultados exactos, incluidas las trazas. Los casos mínimos están en [04](04-algoritmos-bfs.md) y [05](05-algoritmos-dijkstra.md).

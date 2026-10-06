@@ -52,4 +52,4 @@ markers = ["integration: requiere Postgres (docker-compose.test.yml)"]
 filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
 
 [tool.coverage.report]
-exclude_also = ["\\.\\.\\.$"]
+exclude_also = ["\\.\\.\\.$", "raise NotImplementedError"]

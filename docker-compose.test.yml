@@ -3,8 +3,26 @@
 name: serviciocerca-test
 
 services:
+  # PostgreSQL efímero (tmpfs) solo para las pruebas de integración de network-service (F1-B).
+  network-db:
+    image: postgres:16.6-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: network_test
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d network_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
   network-tests:
     build: { context: ./services/network-service, target: test }
+    environment:
+      TEST_DATABASE_URL: postgresql+psycopg://test:test@network-db:5432/network_test
+    depends_on:
+      network-db: { condition: service_healthy }
   routing-tests:
     build: { context: ./services/routing-service, target: test }
   console-tests:

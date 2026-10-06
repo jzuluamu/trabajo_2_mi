@@ -19,6 +19,7 @@ Antes de escribir **cualquier** línea de código **o de documentación**:
 | Pruebas, harness | [`docs/07-testing-y-harness.md`](docs/07-testing-y-harness.md) |
 | Ramas, PRs, commits | [`docs/08-colaboracion-git.md`](docs/08-colaboracion-git.md) |
 | Arquitectura o decisiones | [`docs/01-arquitectura.md`](docs/01-arquitectura.md) + [`docs/adr/`](docs/adr/) |
+| **Feature 1 (alcance actual)** | [`docs/features/F1-red-cobertura.md`](docs/features/F1-red-cobertura.md) + la especificación de **su carril** (F1A/F1B/F1C/F1D) |
 
 Si la documentación contradice el código, **no adivine**. Señálelo y corrija primero la fuente equivocada.
 
@@ -42,7 +43,13 @@ Una tarea **solo** está terminada si `make test` pasa. El harness ejecuta ruff,
 - No se desactivan reglas, pruebas ni umbrales para "hacer pasar" el harness. Si una excepción es legítima, se justifica en el PR.
 - Si no puede ejecutar `make test`, dígalo explícitamente; nunca declare "listo" sin evidencia.
 
-## 4. Arquitectura y código
+## 4. Propiedad de archivos (trabajo en paralelo)
+
+- Trabaje **solo** en los archivos de su carril, según la tabla de propiedad de [`docs/features/F1-red-cobertura.md`](docs/features/F1-red-cobertura.md#propiedad-de-archivos-services-network-service).
+- Los archivos **congelados** (modelos, errores, puertos, repositorio en memoria, mapeo de errores, `main.py`, `core/`, suite de contrato, prueba de interfaces congeladas, Docker, `pyproject.toml`, `uv.lock`, `Makefile`) no se modifican. Si cree que hace falta, **deténgase y repórtelo** al humano en lugar de cambiarlo.
+- No modifique pruebas ajenas para hacerlas pasar. Si una prueba de otro carril falla por su cambio, el cambio está mal.
+
+## 5. Arquitectura y código
 
 - Las capas por servicio son `domain/` → `application/` → `infrastructure/` → `api/`. **`domain/` no hace I/O** (ni HTTP, ni BD, ni archivos).
 - SOLID:
@@ -54,13 +61,13 @@ Una tarea **solo** está terminada si `make test` pasa. El harness ejecuta ruff,
 - Los mensajes al usuario van en español y deben ser legibles. Los identificadores del código van en inglés.
 - BFS y Dijkstra los **implementa el equipo**. No se usan networkx, scipy ni similares para resolverlos.
 
-## 5. Seguridad
+## 6. Seguridad
 
 - Nunca commitear `.env`, claves ni tokens. Solo `.env.example`, con valores `CHANGE_ME_*`.
 - Todo endpoint, salvo `/health`, exige `X-API-Key` con el rol correspondiente.
 - Validar toda entrada con Pydantic. No reflejar la entrada del cliente en los errores. No exponer stack traces.
 
-## 6. Git
+## 7. Git
 
 - Ramas: `feature/F<n>-<slug>`, `fix/<slug>`, `docs/<slug>`, `chore/<slug>`. Nunca trabajar directo en `main`.
 - Usar **Conventional Commits** (`feat(routing): ...`, `fix(network): ...`, `docs: ...`, `test: ...`).

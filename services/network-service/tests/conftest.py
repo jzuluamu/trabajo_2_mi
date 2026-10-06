@@ -12,15 +12,19 @@ TEST_ENV = {
 }
 os.environ.update(TEST_ENV)
 
+from network_service.api.dependencies import _repository_singleton  # noqa: E402
 from network_service.config import get_settings  # noqa: E402
 from network_service.main import create_app  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def _fresh_settings() -> Iterator[None]:
+    """Cada prueba arranca con configuración y repositorio (en memoria) nuevos."""
     get_settings.cache_clear()
+    _repository_singleton.cache_clear()
     yield
     get_settings.cache_clear()
+    _repository_singleton.cache_clear()
 
 
 @pytest.fixture

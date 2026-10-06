@@ -21,38 +21,50 @@ Cada fase termina con un **checkpoint humano**: alguien del equipo ejecuta la gu
 
 **Checkpoint:** `make env && make up`. Los 3 servicios aparecen *healthy*, la consola abre, el login con la clave de operador o coordinador funciona y `make test` pasa. Ver [10-guia-prueba-manual.md](10-guia-prueba-manual.md#fase-0).
 
-## Fase 1 — Features en paralelo ⏳
+## Ajuste de alcance (decisión del equipo)
 
-Las 4 personas trabajan a la vez; cada una en su rama.
+El proyecto se enfoca **solo en Feature 1 (Red de cobertura)**. F2, F3 y F4 completas, la aceptación y el cambio docente quedan **fuera del alcance actual**. Sus documentos (`docs/04`, `docs/05`, `F2`–`F4`) se conservan como diseño de referencia.
 
-| Persona | Entregable | Checkpoint |
-|---|---|---|
-| P1 · F1 | Modelos SQLAlchemy + Alembic, repositorios, casos de uso, endpoints de nodos, conexiones, red e importación, validaciones y pruebas con PostgreSQL de prueba | Crear la red desde Swagger `:8001/docs` y ver cada error del contrato |
-| P2 · F2 | `BreadthFirstReachability` en `domain/coverage/`, caso de uso, endpoint `/coverage` con `NetworkGateway` falso en las pruebas y traza | Pruebas de [04](04-algoritmos-bfs.md) en verde |
-| P3 · F3 | `DijkstraPathFinder` en `domain/cheapest_path/`, casos de uso de ruta y de mejor atención, y endpoints | Pruebas de [05](05-algoritmos-dijkstra.md) en verde |
-| P4 · F4 | Páginas de configuración (coordinador), cobertura y ruta (operador), visualización pyvis, todo contra clientes *mock* que siguen el contrato | Navegar la consola con datos falsos |
+## Base de F1 (congelada) ✅
 
-## Fase 2 — Integración ⏳
+La construyó el integrador sobre la Fase 0 para que los carriles trabajen sin pisarse:
+- entidades (`domain/models.py`), errores con código (`domain/errors.py`) y puertos (`application/ports.py`);
+- repositorio en memoria de referencia y **suite de contrato** del repositorio;
+- firmas de reglas y casos de uso, vigiladas por `tests/unit/test_frozen_interfaces.py`;
+- mapeo de errores a HTTP y routers ya registrados;
+- esqueleto de Alembic con migraciones al arrancar, y PostgreSQL de pruebas en el harness.
 
-- `HttpNetworkGateway` en routing-service, que consume `GET /api/v1/network` con la clave interna y responde `NETWORK_UNAVAILABLE` si falla.
-- La consola consume las APIs reales y carga la semilla con `POST /network/import`.
-- Visualización que resalta la cobertura (nodos alcanzados) y la ruta (aristas del camino), y compara el camino de menor costo con el de menos tramos.
+También corrige el `Makefile`: antes `make test` imprimía OK **sin ejecutar pruebas**. Ver [07](07-testing-y-harness.md).
 
-**Checkpoint:** demo de punta a punta en <http://localhost:8501>.
+## Fase 1 — F1 en 3 carriles paralelos 🟡
 
-## Fase 3 — Aceptación y evidencia ⏳
+| Carril | Entregable | Rama | Checkpoint |
+|---|---|---|---|
+| **F1-A** | Reglas de dominio y 9 casos de uso | `feature/F1A-dominio-casos-de-uso` | `make test-network` con 100 % en `rules.py` y `use_cases.py` |
+| **F1-B** | Tablas, migración `0001` y `SqlAlchemyNetworkRepository` | `feature/F1B-persistencia` | La suite de contrato pasa contra PostgreSQL; `make reset && make up` aplica la migración |
+| **F1-C** | Esquemas, 9 endpoints, autorización por rol e inyección de dependencias | `feature/F1C-api-rest` | Swagger muestra las 9 rutas; las pruebas con fakes están en verde |
 
-- `make test-acceptance` con los 4 escenarios del brief: éxito, zona inexistente, red desconectada y peso inválido.
-- Evidencia por feature en `docs/features/F*.md`: capturas, salidas de la API y trazas.
-- Revisión final de la documentación frente al código.
+Cada carril pasa `make test` por sí solo, así que **se fusionan en cualquier orden**. Especificaciones: [F1-A](features/F1A-dominio-casos-de-uso.md), [F1-B](features/F1B-persistencia.md) y [F1-C](features/F1C-api-rest.md). Prompts para los agentes: [F1-prompts](features/F1-prompts.md).
 
-**Checkpoint:** recorrer la guía completa [10](10-guia-prueba-manual.md).
+## Fase 1.D — Integración de F1 ⏳
 
-## Fase 4 — Cambio de requisito docente ⏳
+Empieza cuando A, B y C están en `main`:
+- prueba punta a punta;
+- `make smoke-f1` contra Docker, incluida la persistencia;
+- interfaz mínima en la consola (ver la red; como coordinador, registrar y cargar la red demo);
+- evidencia y documentación al día.
 
-El requisito aún no se conoce. Puntos de extensión ya preparados:
-- **Algoritmo nuevo** (A*, restricciones, k caminos): implementar `PathFinder` o `ReachabilityStrategy` sin tocar los casos de uso (OCP).
-- **Nuevo atributo de arista** (distancia además de tiempo, costo monetario): agregarlo al contrato y elegir el peso con un parámetro.
-- **Nueva regla de cobertura** (p. ej. "cubre si llega en ≤ N minutos"): es un caso de uso nuevo que combina Dijkstra con un umbral.
+Especificación: [F1-D](features/F1D-integracion.md).
 
-Al conocerse el requisito: crear un ADR, actualizar el contrato y abrir `docs/features/F4-consola.md` §cambio docente.
+**Checkpoint:** `make reset && make up && make test && make smoke-f1`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F1.
+
+## Fuera del alcance actual ⛔
+
+Si el alcance se amplía, se retoman en este orden:
+1. F2, cobertura con BFS ([04](04-algoritmos-bfs.md));
+2. F3, menor costo con Dijkstra ([05](05-algoritmos-dijkstra.md));
+3. F4 completa;
+4. la aceptación de los 4 escenarios del brief;
+5. el cambio de requisito docente.
+
+Los puntos de extensión siguen preparados: `ReachabilityStrategy` y `PathFinder` en routing-service.

@@ -3,14 +3,28 @@
 > **Regla obligatoria** ([AGENTS.md](../AGENTS.md)): lea este índice y los documentos relacionados
 > antes de escribir código o documentación, y actualícelos en el mismo PR si cambia algo.
 
+## Alcance actual: solo Feature 1
+
+El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una base congelada, más un paso de integración. F2, F3 y F4 quedan **fuera del alcance actual**: su documentación se conserva como diseño de referencia. Detalle y reparto de archivos en [features/F1-red-cobertura.md](features/F1-red-cobertura.md). Prompts para los agentes en [features/F1-prompts.md](features/F1-prompts.md).
+
+## Estado de F1 (cada carril edita solo su fila)
+
+| Carril | Qué construye | Dueño | Estado | Especificación |
+|---|---|---|---|---|
+| Base | Modelos, errores, puertos, repositorio en memoria, firmas, mapeo HTTP, Alembic, BD de pruebas | Integrador | ✅ Lista | [F1](features/F1-red-cobertura.md) |
+| F1-A | Reglas de dominio y 9 casos de uso | _(nombre)_ | ⏳ Pendiente | [F1-A](features/F1A-dominio-casos-de-uso.md) |
+| F1-B | Persistencia PostgreSQL (tablas, migración, repositorio) | _(nombre)_ | ⏳ Pendiente | [F1-B](features/F1B-persistencia.md) |
+| F1-C | API REST (esquemas, endpoints, inyección) | _(nombre)_ | ⏳ Pendiente | [F1-C](features/F1C-api-rest.md) |
+| F1-D | Integración, interfaz mínima y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [F1-D](features/F1D-integracion.md) |
+
 ## Estado de features
 
-| # | Feature | Servicio | Dueño | Estado | Especificación |
-|---|---|---|---|---|---|
-| F1 | Red de cobertura | `network-service` | Persona 1 | ⏳ Pendiente (Fase 1) | [F1](features/F1-red-cobertura.md) |
-| F2 | Consulta de cobertura (BFS) | `routing-service` | Persona 2 | ⏳ Pendiente (Fase 1) | [F2](features/F2-consulta-cobertura.md) |
-| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | Persona 3 | ⏳ Pendiente (Fase 1) | [F3](features/F3-menor-costo.md) |
-| F4 | Consola de operación | `console` | Persona 4 | 🟡 Base lista (login + estado) | [F4](features/F4-consola.md) |
+| # | Feature | Servicio | Estado | Especificación |
+|---|---|---|---|---|
+| F1 | Red de cobertura | `network-service` | 🟡 En construcción (carriles A, B y C) | [F1](features/F1-red-cobertura.md) |
+| F2 | Consulta de cobertura (BFS) | `routing-service` | ⛔ Fuera del alcance actual | [F2](features/F2-consulta-cobertura.md) |
+| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
+| F4 | Consola de operación | `console` | 🟡 Login y estado; F1-D agrega la interfaz mínima de la red | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
 
@@ -19,10 +33,9 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 — Fundaciones | Docker, harness, seguridad base, contratos, documentación | ✅ Terminada |
-| 1 — Features en paralelo | F1, F2, F3 y F4 contra un mock | ⏳ Siguiente |
-| 2 — Integración | Servicios reales extremo a extremo y visualización | ⏳ |
-| 3 — Aceptación y evidencia | 4 escenarios del brief y evidencias | ⏳ |
-| 4 — Cambio docente | Requisito por definir | ⏳ |
+| 1 — F1 en 3 carriles paralelos | F1-A, F1-B y F1-C sobre la base congelada | 🟡 En curso |
+| 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ⏳ |
+| Posterior | F2, F3, F4 completas, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 
@@ -44,6 +57,7 @@ Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 | [10-guia-prueba-manual.md](10-guia-prueba-manual.md) | Paso a paso para probar la demo y el `.env` |
 | [adr/](adr/) | Registro de decisiones de arquitectura |
 | [features/](features/) | Especificación, criterios de aceptación y evidencia por feature |
+| [features/F1-prompts.md](features/F1-prompts.md) | Prompts para que cada agente de IA (Claude/Codex) construya su carril |
 
 ## Decisiones (ADR)
 

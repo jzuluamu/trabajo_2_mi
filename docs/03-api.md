@@ -10,6 +10,13 @@ Leyenda: ✅ implementado · ⏳ pendiente (fase indicada)
 ## Convenciones
 
 - Prefijo `/api/v1`. JSON UTF-8. Los identificadores siguen `^[A-Z0-9_-]{1,32}$`.
+- **Espacios de nombres de ids:** son independientes para nodos, conexiones y técnicos. Un nodo y una conexión pueden compartir id, pero dos nodos no. Los técnicos son únicos en toda la red.
+- **Orden de errores** (cuando hay varios problemas, se informa el primero):
+  - nodos: formato → `DUPLICATE_ID` de nodo → `DUPLICATE_ID` de técnico;
+  - conexiones: formato (`VALIDATION_ERROR`, `SELF_LOOP`, `INVALID_WEIGHT`) → `DUPLICATE_ID` → `NODE_NOT_FOUND` → `DUPLICATE_EDGE`.
+
+  Detalle en [F1-A](features/F1A-dominio-casos-de-uso.md).
+- **Ids en la ruta** (`/nodes/{id}`): no se valida su formato. Un id inexistente o mal formado responde `NODE_NOT_FOUND` / `EDGE_NOT_FOUND`.
 - **Autenticación:** encabezado `X-API-Key`. Roles: `coordinator`, `operator` e `internal` ([06-seguridad.md](06-seguridad.md)).
 - **Errores**, siempre con la misma forma:
 
@@ -74,7 +81,7 @@ Leyenda: ✅ implementado · ⏳ pendiente (fase indicada)
 
 ### `DELETE /api/v1/nodes/{id}`
 
-Responde `204`. Errores posibles: `NODE_NOT_FOUND` y `NODE_IN_USE`.
+Responde `204`. Errores posibles: `NODE_NOT_FOUND` y `NODE_IN_USE` (con `details.edge_ids`, las conexiones que lo usan).
 
 ### `POST /api/v1/edges`
 
@@ -84,6 +91,10 @@ Responde `204`. Errores posibles: `NODE_NOT_FOUND` y `NODE_IN_USE`.
 
 - Responde `201` con la conexión.
 - Errores posibles: `NODE_NOT_FOUND`, `DUPLICATE_ID`, `DUPLICATE_EDGE`, `INVALID_WEIGHT` y `SELF_LOOP`.
+
+### `DELETE /api/v1/edges/{id}`
+
+Responde `204`. Error posible: `EDGE_NOT_FOUND`.
 
 ### `GET /api/v1/network`
 
@@ -101,11 +112,11 @@ Responde `204`. Errores posibles: `NODE_NOT_FOUND` y `NODE_IN_USE`.
 
 ### `POST /api/v1/network/import`
 
-- Cuerpo: `{"nodes": [...], "edges": [...], "replace": true}`.
+- Cuerpo: `{"nodes": [...], "edges": [...], "replace": true}`. `replace` es opcional y por defecto vale `false`, así que **agrega** a la red existente.
 - Es **atómico**: o se importa todo o nada.
 - Con `replace=true` borra la red previa.
 - Responde `201 {"nodes": <n>, "edges": <m>}`.
-- Aplica las mismas validaciones que los endpoints individuales. Los errores incluyen en `details` el índice del elemento que falló.
+- Aplica las mismas validaciones que los endpoints individuales. Los errores incluyen en `details` `section` (`"nodes"` o `"edges"`) e `index` del elemento que falló.
 - Lo usa la consola (cargar `seed/red_demo.json`) y las pruebas de aceptación.
 
 ---
