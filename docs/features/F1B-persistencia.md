@@ -1,6 +1,6 @@
 # F1-B · Persistencia en PostgreSQL
 
-- **Rama:** `feature/F1B-persistencia` · **Estado:** ⏳ Pendiente
+- **Rama:** `feature/F1B-persistencia` · **Estado:** ✅ Terminada (con evidencia)
 - **Dueño:** _(nombre)_
 - **Lea antes:** [F1 (general)](F1-red-cobertura.md), [02-modelo-de-grafo](../02-modelo-de-grafo.md), [06-seguridad](../06-seguridad.md), [07-testing](../07-testing-y-harness.md)
 
@@ -104,10 +104,47 @@ docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\d 
 ```
 
 ## Definition of Done
-- [ ] `make test-network` y `make test` en verde. Las pruebas de integración **se ejecutan** (no aparecen como `SKIPPED`).
-- [ ] La migración `0001` aplica, revierte y vuelve a aplicar.
-- [ ] El estado está actualizado en este archivo y en `docs/README.md`.
+- [x] `make test-network` y `make test` en verde. Las pruebas de integración **se ejecutan** (no aparecen como `SKIPPED`).
+- [x] La migración `0001` aplica, revierte y vuelve a aplicar.
+- [x] El estado está actualizado en este archivo y en `docs/README.md`.
 - [ ] PR con la plantilla completa.
 
 ## Evidencia
-_Pegar el resumen de `make test-network` y la salida de `\d edges`._
+
+`make test-network`: harness en verde, 87 passed (26 de integración ejecutadas, 0 SKIPPED:
+16 heredadas del contrato + peso 0/-5/1441 + self-loop + par repetido + tipo OTRO +
+FK RESTRICT + CASCADE + persistencia entre instancias + migraciones upgrade/downgrade/upgrade).
+`make test`: `OK: harness en verde para: network routing console`
+(network 87 + routing 27 + console 11 passed).
+
+`docker compose logs network-service | grep -i "running upgrade"`:
+
+```text
+network-service-1  | INFO  [alembic.runtime.migration] Running upgrade  -> 0001, Crea las tablas de la red (F1-B). Esquema exacto: docs/features/F1B-persistencia.md.
+```
+
+`docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\d edges"'`:
+
+```text
+                          Table "public.edges"
+    Column     |         Type          | Collation | Nullable | Default
+---------------+-----------------------+-----------+----------+---------
+ id            | character varying(32) |           | not null |
+ source        | character varying(32) |           | not null |
+ target        | character varying(32) |           | not null |
+ weight        | double precision      |           | not null |
+ bidirectional | boolean               |           | not null |
+Indexes:
+    "edges_pkey" PRIMARY KEY, btree (id)
+    "uq_edges_source_target" UNIQUE CONSTRAINT, btree (source, target)
+Check constraints:
+    "ck_edges_no_self_loop" CHECK (source::text <> target::text)
+    "ck_edges_weight_range" CHECK (weight > 0::double precision AND weight <= 1440::double precision)
+Foreign-key constraints:
+    "edges_source_fkey" FOREIGN KEY (source) REFERENCES nodes(id) ON DELETE RESTRICT
+    "edges_target_fkey" FOREIGN KEY (target) REFERENCES nodes(id) ON DELETE RESTRICT
+```
+
+Nota de implementación: las lecturas usan `Session` (no `Connection`), porque solo
+`Session` materializa entidades ORM; con `Connection`, `scalars(select(NodeRow))`
+devuelve la primera columna en lugar de la entidad.

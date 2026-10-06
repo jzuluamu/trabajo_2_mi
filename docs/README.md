@@ -13,7 +13,7 @@ El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una
 |---|---|---|---|---|
 | Base | Modelos, errores, puertos, repositorio en memoria, firmas, mapeo HTTP, Alembic, BD de pruebas | Integrador | ✅ Lista | [F1](features/F1-red-cobertura.md) |
 | F1-A | Reglas de dominio y 9 casos de uso | _(nombre)_ | ⏳ Pendiente | [F1-A](features/F1A-dominio-casos-de-uso.md) |
-| F1-B | Persistencia PostgreSQL (tablas, migración, repositorio) | _(nombre)_ | ⏳ Pendiente | [F1-B](features/F1B-persistencia.md) |
+| F1-B | Persistencia PostgreSQL (tablas, migración, repositorio) | _(nombre)_ | ✅ Terminada (con evidencia) | [F1-B](features/F1B-persistencia.md) |
 | F1-C | API REST (esquemas, endpoints, inyección) | _(nombre)_ | ⏳ Pendiente | [F1-C](features/F1C-api-rest.md) |
 | F1-D | Integración, interfaz mínima y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [F1-D](features/F1D-integracion.md) |
 
