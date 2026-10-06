@@ -2,6 +2,41 @@
 
 Paso a paso para que una **persona** compruebe cada fase. Requisitos: Docker Desktop (o Engine con Compose v2) en ejecución y `make`. En Windows sin `make`, use los comandos `docker compose` equivalentes de [07](07-testing-y-harness.md).
 
+## Inicio rápido para cada integrante
+
+1. Instale Git y Docker Desktop, y ábralo: debe estar corriendo.
+2. Clone el repositorio y entre a la carpeta:
+
+   ```bash
+   git clone https://github.com/jzuluamu/trabajo_2_mi.git && cd trabajo_2_mi
+   ```
+
+3. Cree su `.env` (solo la primera vez):
+
+   ```bash
+   make env
+   ```
+
+4. Levante los contenedores. Termina cuando todos están *healthy*:
+
+   ```bash
+   make up
+   ```
+
+5. Compruebe que `db`, `network-service`, `routing-service` y `console` estén `Up (healthy)`, y que ninguno quede en `Restarting`:
+
+   ```bash
+   docker compose ps
+   ```
+
+6. Ejecute el harness:
+
+   ```bash
+   make test
+   ```
+
+   Debe ver, **por cada servicio**, los pasos `==> ruff … ==> pytest` y `N passed`. Al final debe aparecer `OK: harness en verde para: network routing console`. Si solo aparece `OK`, sin esos pasos, su copia está desactualizada: haga `git pull`.
+
 ## Configurar `.env` (una sola vez)
 
 ```bash
@@ -111,7 +146,16 @@ grep API_KEY .env
 
    O `make reset` para borrar también los datos.
 
-## Fase 1 / 2 / 3
+## F1 · Red de cobertura
+
+F1-D completa esta sección al integrar. Mientras los carriles están en construcción, cada uno verifica lo suyo:
+- **F1-A:** `make test-network`.
+- **F1-B:** `make reset && make up` y, en `docker compose logs network-service`, la línea `Running upgrade -> 0001`.
+- **F1-C:** Swagger en <http://localhost:8001/docs>.
+
+Con el repositorio en memoria (antes de que se fusione F1-B), los datos se pierden al reiniciar.
+
+## Fases posteriores (fuera del alcance actual)
 
 Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido previsto para la demo final:
 - cargar la red demo;
@@ -129,3 +173,9 @@ Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido pr
 | Un servicio queda `unhealthy` o reinicia | Ejecute `make logs`. Suele ser una clave inválida en `.env` |
 | `port is already allocated` | Cambie `*_PORT` en `.env` |
 | Error de autenticación de Postgres tras editar `.env` | Ejecute `make reset` para recrear el volumen con la nueva contraseña |
+| `network-service` reinicia con `Can't locate revision identified by '…'` | Su volumen tiene migraciones de otra rama o de un experimento. Ejecute `make reset && make up` (borra los datos locales) |
+| `make test` imprime solo `OK` sin los pasos `==>` | Tiene el `Makefile` anterior. Haga `git pull` en `main` |
+
+> Todas las copias del proyecto en una misma máquina comparten el nombre de proyecto Compose
+> `serviciocerca` y, por tanto, el volumen de la base. Si cambia de rama y la migración ya no
+> coincide, use `make reset`.

@@ -25,7 +25,10 @@ CMD ["sh", "scripts/check.sh"]
 
 FROM base AS runtime
 COPY --from=deps /opt/venv /opt/venv
+COPY alembic.ini ./
+COPY alembic ./alembic
+COPY scripts/start.sh ./scripts/start.sh
 COPY src ./src
 USER app
 EXPOSE 8001
-CMD ["uvicorn", "network_service.main:app", "--host", "0.0.0.0", "--port", "8001", "--no-server-header"]
+CMD ["sh", "scripts/start.sh"]

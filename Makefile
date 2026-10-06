@@ -6,7 +6,7 @@ TEST_COMPOSE := docker compose -f docker-compose.test.yml
 SERVICES     := network routing console
 
 .DEFAULT_GOAL := help
-.PHONY: help env up down reset logs ps test $(addprefix test-,$(SERVICES)) lock
+.PHONY: help env up down reset logs ps test test-network test-routing test-console lock
 
 help: ## Lista los comandos disponibles
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -32,11 +32,19 @@ logs: ## Sigue los logs de todos los servicios
 ps: ## Estado de los contenedores
 	$(COMPOSE) ps
 
-test: $(addprefix test-,$(SERVICES)) ## Harness completo (Definition of Done)
+# Nota: los targets test-* son explícitos a propósito. GNU make NO aplica reglas de patrón
+# (test-%) a targets .PHONY: con un patrón, `make test` imprimía OK sin ejecutar nada.
+test: test-network test-routing test-console ## Harness completo (Definition of Done)
 	@echo "OK: harness en verde para: $(SERVICES)"
 
-test-%: ## Harness de un servicio: make test-network | test-routing | test-console
-	$(TEST_COMPOSE) run --rm --build $*-tests
+test-network: ## Harness de network-service
+	$(TEST_COMPOSE) run --rm --build network-tests; status=$$?; $(TEST_COMPOSE) down -v --remove-orphans >/dev/null 2>&1; exit $$status
+
+test-routing: ## Harness de routing-service
+	$(TEST_COMPOSE) run --rm --build routing-tests; status=$$?; $(TEST_COMPOSE) down -v --remove-orphans >/dev/null 2>&1; exit $$status
+
+test-console: ## Harness de console
+	$(TEST_COMPOSE) run --rm --build console-tests; status=$$?; $(TEST_COMPOSE) down -v --remove-orphans >/dev/null 2>&1; exit $$status
 
 lock: ## Regenera los uv.lock tras cambiar dependencias en un pyproject.toml
 	@for s in network-service routing-service console; do \
