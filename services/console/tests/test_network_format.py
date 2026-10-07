@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 from console.clients.http import ApiClientError
@@ -6,6 +8,9 @@ from console.network_format import (
     edge_payload,
     edge_rows,
     error_text,
+    md_escape,
+    network_kpis,
+    node_card,
     node_payload,
     node_rows,
     parse_network_file,
@@ -97,3 +102,83 @@ def test_error_text_points_to_import_node() -> None:
     error = ApiClientError("DUPLICATE_ID", "Ya existe.", 409, {"section": "nodes", "index": 0})
 
     assert error_text(error) == "Ya existe. (archivo: nodo #1)"
+
+
+DEMO_LIKE: dict[str, Any] = {
+    "nodes": [
+        {"id": "B_NORTE", "type": "BASE", "name": "Base Norte",
+         "technicians": [{"id": "T01", "name": "Ana", "available": True}]},
+        {"id": "B_OESTE", "type": "BASE", "name": "Base Oeste",
+         "technicians": [{"id": "T04", "name": "Pedro", "available": False}]},
+        {"id": "B_SOLA", "type": "BASE", "name": "Base Sola", "technicians": []},
+        {"id": "Z_CENTRO", "type": "ZONE", "name": "Centro", "technicians": []},
+        {"id": "Z_ISLA", "type": "ZONE", "name": "Isla", "technicians": []},
+    ],
+    "edges": [
+        {"id": "E01", "source": "B_NORTE", "target": "Z_CENTRO", "weight": 30.0,
+         "bidirectional": True},
+        {"id": "E02", "source": "Z_CENTRO", "target": "B_OESTE", "weight": 7.0,
+         "bidirectional": False},
+    ],
+}  # fmt: skip
+
+
+def test_network_kpis() -> None:
+    assert network_kpis(DEMO_LIKE) == [
+        ("3", "Bases", "1 con técnico libre"),
+        ("2", "Zonas", "1 con trayectos"),
+        ("2", "Trayectos", "1 de un solo sentido"),
+        ("1", "Zonas sin conexión", "ninguna base llega"),
+    ]
+
+
+def test_network_kpis_when_all_zones_are_connected() -> None:
+    network = {"nodes": [DEMO_LIKE["nodes"][3]], "edges": []}
+
+    assert network_kpis(network)[3] == ("1", "Zonas sin conexión", "ninguna base llega")
+    assert network_kpis({"nodes": [], "edges": []})[3][2] == "todas conectadas"
+
+
+def test_node_card_for_zone_lists_directions() -> None:
+    card = node_card(DEMO_LIKE, "Z_CENTRO")
+
+    assert card is not None
+    assert card["title"] == "Centro · Zona"
+    assert card["links"] == [
+        {"Trayecto": "↔ Base Norte", "Minutos": 30.0, "Conexión": "E01"},
+        {"Trayecto": "→ Base Oeste", "Minutos": 7.0, "Conexión": "E02"},
+    ]
+    assert card["note"] == ""
+
+
+@pytest.mark.parametrize(
+    ("node_id", "note"),
+    [
+        ("B_OESTE", "Base sin técnicos disponibles: llega a sus zonas, pero no puede atenderlas."),
+        ("B_SOLA", "Base sin trayectos: no puede llegar a ninguna zona."),
+        ("Z_ISLA", "Sin trayectos registrados: ninguna base puede llegar a esta zona."),
+    ],
+)
+def test_node_card_warns_about_unusable_nodes(node_id: str, note: str) -> None:
+    card = node_card(DEMO_LIKE, node_id)
+
+    assert card is not None
+    assert card["note"] == note
+
+
+def test_node_card_incoming_one_way_and_technicians() -> None:
+    card = node_card(DEMO_LIKE, "B_OESTE")
+
+    assert card is not None
+    assert card["links"][0]["Trayecto"] == "← Centro"
+    assert card["technicians"] == [{"label": "Pedro (T04)", "available": False}]
+
+
+def test_node_card_unknown_node() -> None:
+    assert node_card(DEMO_LIKE, "NOPE") is None
+
+
+def test_md_escape_neutralizes_markdown() -> None:
+    assert md_escape("[x](http://e.vil) **b** #h") == (
+        "\\[x\\]\\(http\\://e\\.vil\\) \\*\\*b\\*\\* \\#h"
+    )

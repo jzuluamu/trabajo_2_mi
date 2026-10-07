@@ -8,3 +8,19 @@ gatherUsageStats = false
 
 [client]
 toolbarMode = "minimal"
+
+# Tema claro (docs/features/F4-consola.md §Sistema visual): azules análogos + ámbar de acento.
+[theme]
+base = "light"
+primaryColor = "#1F5FBF"
+backgroundColor = "#F4F7FB"
+secondaryBackgroundColor = "#E8F0FB"
+textColor = "#0F2540"
+borderColor = "#DCE5F0"
+linkColor = "#1F5FBF"
+font = "sans-serif"
+baseRadius = "medium"
+
+[theme.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F7FB"

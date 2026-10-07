@@ -178,15 +178,20 @@ grep API_KEY .env
 3. **Swagger:** abra <http://localhost:8001/docs>. Debe listar las 9 rutas de nodos, conexiones y red.
 
 4. **Consola como operador:** abra <http://localhost:8501>, pegue `OPERATOR_API_KEY`, pulse Enter y luego "Ingresar".
-   1. Verá la sección **Red de cobertura** con 11 bases y zonas (B_NORTE muestra "Ana (T01) ✔, Luis (T02) ✘") y 9 conexiones. E08 aparece como "→ solo ida".
-   2. No aparece la pestaña "Configurar red": el operador solo lee.
+   1. La consola es clara (fondo azul muy pálido). Verá los indicadores: 3 bases (2 con técnico libre), 8 zonas, 9 trayectos (1 de un solo sentido) y 1 zona sin conexión.
+   2. El **mapa** muestra las bases como cuadrados azules (Base Oeste más pálida, "sin técnicos libres"), las zonas como círculos, Isla con borde punteado ("sin conexión"), los minutos en cada trayecto y una flecha en Delicias → Estación.
+   3. Arrastre un nodo: se queda donde lo suelta. Use la rueda o "+"/"−" para el zoom y "Ajustar" para volver a ver todo. Pase el mouse sobre un nodo para ver su resumen.
+   4. Haga clic en Centro: se resaltan sus trayectos y el resto se atenúa. Clic en el fondo: todo vuelve a la normalidad.
+   5. En **Ficha de**, elija Base Norte: verá a Ana "Disponible" y a Luis "No disponible", y sus trayectos. Elija Base Oeste: verá el aviso "Base sin técnicos disponibles…".
+   6. "Ver como tabla (accesible)" muestra las mismas bases, zonas y conexiones en tablas.
+   7. No aparece la pestaña "Configurar red": el operador solo lee.
 
-5. **Consola como coordinador:** cierre sesión y entre con `COORDINATOR_API_KEY`. Abra la pestaña **Configurar red**.
-   1. *Registrar base o zona*: Tipo **Base**, ID `B_ESTE`, Nombre `Base Este`, Técnicos `T10; Sara; sí`. Verá "Nodo 'B_ESTE' registrado." y el nodo en la tabla.
+5. **Consola como coordinador:** cierre sesión y entre con `COORDINATOR_API_KEY`. Abra la pestaña **Configurar red** y use "¿Qué desea hacer?" para elegir la acción.
+   1. *Registrar nodo*: Tipo **Base**, ID `B_ESTE`, Nombre `Base Este`, Técnicos `T10; Sara; sí`. Verá "Nodo 'B_ESTE' registrado." y el nodo en la tabla.
    2. Repita con el ID `B_ESTE`: verá "Ya existe un nodo con id 'B_ESTE'.".
-   3. *Registrar conexión*: ID `E10`, Origen `B_ESTE`, Destino `Z_ISLA`, Minutos `-5`. Verá el mensaje de `INVALID_WEIGHT`: "El peso de la conexión 'E10' debe ser mayor que 0 y menor o igual a 1440 minutos.". Cambie a `12` y registre: verá "Conexión 'E10' registrada.".
+   3. *Registrar conexión*: ID `E10`, Desde `B_ESTE`, Hasta `Z_ISLA`, Minutos `-5`. Antes de guardar, el mapa dibuja la conexión punteada en rojo con "revisar". Pulse "Registrar conexión": verá el mensaje de `INVALID_WEIGHT`: "El peso de la conexión 'E10' debe ser mayor que 0 y menor o igual a 1440 minutos.". Cambie a `12`: la vista previa pasa a ámbar con "12 min · vista previa". Registre: verá "Conexión 'E10' registrada." y el trayecto en el mapa.
    4. *Eliminar*: elija el nodo `B_ESTE` y pulse "Eliminar nodo". Verá que tiene conexiones (`NODE_IN_USE`). Elimine primero la conexión `E10` y después el nodo.
-   5. *Cargar red demo*: suba `seed/red_demo.json`, deje marcado "Reemplazar la red actual" y pulse "Cargar red". Verá "Red cargada: 11 nodos y 9 conexiones.".
+   5. *Cargar red*: suba `seed/red_demo.json`, deje marcado "Reemplazar la red actual" y pulse "Cargar red". Verá "Red cargada: 11 nodos y 9 conexiones.".
 
 6. **Permisos por API:**
 

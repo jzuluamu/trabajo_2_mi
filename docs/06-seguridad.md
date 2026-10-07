@@ -37,6 +37,15 @@ Ver [ADR 0004](adr/0004-auth-api-key-por-rol.md).
 - Las excepciones no controladas responden `500 INTERNAL_ERROR` genérico. El detalle va al log del servidor, nunca al cliente.
 - Uvicorn corre con `--no-server-header`.
 
+## Consola: grafo embebido
+
+Ver [ADR 0006](adr/0006-grafo-pyvis-embebido-seguro.md):
+- el mapa va en un iframe con **origen opaco** (URL `data:`);
+- tiene CSP `default-src 'none'` y `script-src` solo con los hash de sus dos scripts;
+- no carga recursos externos;
+- los datos de la API se serializan con `tojson` y se muestran como texto plano;
+- los nombres que entran en Markdown de Streamlit se escapan (`md_escape`).
+
 ## Secretos
 
 - `.env` está en `.gitignore`. Solo se versiona `.env.example`, con marcadores `CHANGE_ME_*`.

@@ -24,7 +24,7 @@ El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una
 | F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
 | F2 | Consulta de cobertura (BFS) | `routing-service` | ⛔ Fuera del alcance actual | [F2](features/F2-consulta-cobertura.md) |
 | F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
-| F4 | Consola de operación | `console` | 🟡 Login, estado e interfaz mínima de la red (F1-D) | [F4](features/F4-consola.md) |
+| F4 | Consola de operación | `console` | 🟡 Consola visual de la red: mapa interactivo y tema claro (ADR 0006) | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
 
@@ -68,3 +68,4 @@ Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 | [0003](adr/0003-modelo-de-grafo.md) | Técnicos como atributo de la base y grafo dirigido con aristas bidireccionales |
 | [0004](adr/0004-auth-api-key-por-rol.md) | Autenticación por API key por rol |
 | [0005](adr/0005-consola-streamlit.md) | Consola en Streamlit |
+| [0006](adr/0006-grafo-pyvis-embebido-seguro.md) | Grafo interactivo con pyvis embebido de forma segura |
