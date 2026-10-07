@@ -1,6 +1,6 @@
 # F1-C · API REST de la red
 
-- **Rama:** `feature/F1C-api-rest` · **Estado:** ⏳ Pendiente
+- **Rama:** `feature/F1C-api-rest` · **Estado:** ✅ Terminada
 - **Dueño:** _(nombre)_
 - **Lea antes:** [F1 (general)](F1-red-cobertura.md), [03-api](../03-api.md#network-service-8001--feature-1) (**contrato**), [06-seguridad](../06-seguridad.md)
 
@@ -85,9 +85,9 @@ Además:
 - [ ] Swagger: `/openapi.json` contiene las 9 rutas.
 
 ## Definition of Done
-- [ ] `make test-network` y `make test` en verde.
-- [ ] Endpoints marcados ✅ en `docs/03-api.md`. El estado está actualizado en este archivo y en `docs/README.md`.
+- [x] `make test-network` y `make test` en verde.
+- [x] Endpoints marcados ✅ en `docs/03-api.md`. El estado está actualizado en este archivo y en `docs/README.md`.
 - [ ] PR con la plantilla completa.
 
 ## Evidencia
-_Pegar el resumen de `make test-network` y una captura de Swagger (`http://localhost:8001/docs`)._
+`make test-network`: lint, formato, mypy strict, Bandit y pip-audit pasaron; **204 pruebas aprobadas** y **98,53 % de cobertura**. La especificación OpenAPI incluye las nueve operaciones de F1-C. Falta adjuntar la captura de Swagger al PR.
