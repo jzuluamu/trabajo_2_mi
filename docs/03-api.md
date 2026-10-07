@@ -54,14 +54,14 @@ Leyenda: ✅ implementado · ⏳ pendiente (fase indicada)
 |---|---|---|
 | `GET /health` | público | ✅ |
 | `GET /api/v1/auth/whoami` | todos | ✅ |
-| `POST /api/v1/nodes` | coordinator | ⏳ F1 |
-| `GET /api/v1/nodes` · `GET /api/v1/nodes/{id}` | coordinator, operator | ⏳ F1 |
-| `DELETE /api/v1/nodes/{id}` | coordinator | ⏳ F1 |
-| `POST /api/v1/edges` | coordinator | ⏳ F1 |
-| `GET /api/v1/edges` | coordinator, operator | ⏳ F1 |
-| `DELETE /api/v1/edges/{id}` | coordinator | ⏳ F1 |
-| `GET /api/v1/network` | coordinator, operator, internal | ⏳ F1 |
-| `POST /api/v1/network/import` | coordinator | ⏳ F1 |
+| `POST /api/v1/nodes` | coordinator | ✅ F1-C |
+| `GET /api/v1/nodes` · `GET /api/v1/nodes/{id}` | coordinator, operator | ✅ F1-C |
+| `DELETE /api/v1/nodes/{id}` | coordinator | ✅ F1-C |
+| `POST /api/v1/edges` | coordinator | ✅ F1-C |
+| `GET /api/v1/edges` | coordinator, operator | ✅ F1-C |
+| `DELETE /api/v1/edges/{id}` | coordinator | ✅ F1-C |
+| `GET /api/v1/network` | coordinator, operator, internal | ✅ F1-C |
+| `POST /api/v1/network/import` | coordinator | ✅ F1-C |
 
 ### `GET /api/v1/auth/whoami` ✅
 
