@@ -25,12 +25,17 @@ from network_service.domain.models import (
 )
 
 
+def is_identifier(value: str) -> bool:
+    """True si `value` cumple `ID_PATTERN`. Sirve para decidir si un id puede mostrarse."""
+    return re.fullmatch(ID_PATTERN, value) is not None
+
+
 def validate_identifier(value: str, field: str) -> None:
     """Exige `value` con formato `ID_PATTERN` (1-32 caracteres A-Z, 0-9, '_' o '-').
 
     Lanza `InvalidFieldError(details={"field": field})`. No incluir `value` en el mensaje.
     """
-    if re.fullmatch(ID_PATTERN, value) is None:
+    if not is_identifier(value):
         raise InvalidFieldError(
             f"El campo '{field}' debe tener entre 1 y 32 caracteres: A-Z, 0-9, '_' o '-'.",
             field=field,

@@ -65,7 +65,8 @@ def provide_register_node(
 | `POST /api/v1/network/import` | coordinator | `ImportNetwork` | `201` `ImportSummaryOut` |
 
 - Autorización: `dependencies=[Depends(require_roles(Role.COORDINATOR, ...))]` en cada endpoint (`core/security.py`).
-- Los parámetros de ruta `{node_id}` y `{edge_id}` **no** se validan con regex: un id con formato inválido simplemente no existe y produce `NODE_NOT_FOUND` / `EDGE_NOT_FOUND`.
+- Los parámetros de ruta `{node_id}` y `{edge_id}` **no** se validan con regex: un id con formato inválido simplemente no existe y produce `NODE_NOT_FOUND` / `EDGE_NOT_FOUND` (sin reflejar el id; ver F1-A).
+- `EdgeIn.weight` usa `Field(strict=True)` (ajuste F1-D): acepta números JSON y rechaza `true` o `"30"` con `VALIDATION_ERROR`.
 - Cada endpoint declara `summary` en español y `response_model`, para que Swagger quede legible.
 - **No** capture `DomainError` en los routers.
 

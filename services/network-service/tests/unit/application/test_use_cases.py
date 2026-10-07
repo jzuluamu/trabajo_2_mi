@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import pytest
 
 from network_service.application.use_cases import (
@@ -443,3 +445,25 @@ def test_import_network_replace_false_allows_edge_referencing_existing_node() ->
 
     assert summary.edges == 1
     assert repo.get_edge("E01") is not None
+
+
+@pytest.mark.parametrize(
+    ("use_case", "code"),
+    [
+        (lambda repo: GetNode(repo).execute("<script>"), "NODE_NOT_FOUND"),
+        (lambda repo: DeleteNode(repo).execute("<script>"), "NODE_NOT_FOUND"),
+        (lambda repo: DeleteEdge(repo).execute("<script>"), "EDGE_NOT_FOUND"),
+    ],
+)
+def test_not_found_does_not_reflect_malformed_path_id(
+    use_case: Callable[[InMemoryNetworkRepository], object], code: str
+) -> None:
+    repo = InMemoryNetworkRepository()
+
+    with pytest.raises((NodeNotFoundError, EdgeNotFoundError)) as excinfo:
+        use_case(repo)
+
+    error = excinfo.value
+    assert error.code == code
+    assert error.details == {}
+    assert "<script>" not in error.message
