@@ -148,12 +148,61 @@ grep API_KEY .env
 
 ## F1 · Red de cobertura
 
-F1-D completa esta sección al integrar. Mientras los carriles están en construcción, cada uno verifica lo suyo:
-- **F1-A:** `make test-network`.
-- **F1-B:** `make reset && make up` y, en `docker compose logs network-service`, la línea `Running upgrade -> 0001`.
-- **F1-C:** Swagger en <http://localhost:8001/docs>.
+> `make smoke-f1` y "Cargar red" con *Reemplazar la red actual* **sustituyen** la red de su demo
+> por la de `seed/red_demo.json`.
 
-Con el repositorio en memoria (antes de que se fusione F1-B), los datos se pierden al reiniciar.
+1. **Base limpia y migración:**
+
+   ```bash
+   make reset && make up
+   ```
+
+   ```bash
+   docker compose logs network-service | grep upgrade
+   ```
+
+   Esperado: `Running upgrade  -> 0001`.
+
+2. **Harness y humo:**
+
+   ```bash
+   make test
+   ```
+
+   ```bash
+   make smoke-f1
+   ```
+
+   Esperado: `OK: harness en verde…` y `OK: smoke F1 en verde`, con los cuatro pasos en `OK`: importar, leer, `INVALID_WEIGHT` y persistencia tras reiniciar.
+
+3. **Swagger:** abra <http://localhost:8001/docs>. Debe listar las 9 rutas de nodos, conexiones y red.
+
+4. **Consola como operador:** abra <http://localhost:8501>, pegue `OPERATOR_API_KEY`, pulse Enter y luego "Ingresar".
+   1. Verá la sección **Red de cobertura** con 11 bases y zonas (B_NORTE muestra "Ana (T01) ✔, Luis (T02) ✘") y 9 conexiones. E08 aparece como "→ solo ida".
+   2. No aparece la pestaña "Configurar red": el operador solo lee.
+
+5. **Consola como coordinador:** cierre sesión y entre con `COORDINATOR_API_KEY`. Abra la pestaña **Configurar red**.
+   1. *Registrar base o zona*: Tipo **Base**, ID `B_ESTE`, Nombre `Base Este`, Técnicos `T10; Sara; sí`. Verá "Nodo 'B_ESTE' registrado." y el nodo en la tabla.
+   2. Repita con el ID `B_ESTE`: verá "Ya existe un nodo con id 'B_ESTE'.".
+   3. *Registrar conexión*: ID `E10`, Origen `B_ESTE`, Destino `Z_ISLA`, Minutos `-5`. Verá el mensaje de `INVALID_WEIGHT`: "El peso de la conexión 'E10' debe ser mayor que 0 y menor o igual a 1440 minutos.". Cambie a `12` y registre: verá "Conexión 'E10' registrada.".
+   4. *Eliminar*: elija el nodo `B_ESTE` y pulse "Eliminar nodo". Verá que tiene conexiones (`NODE_IN_USE`). Elimine primero la conexión `E10` y después el nodo.
+   5. *Cargar red demo*: suba `seed/red_demo.json`, deje marcado "Reemplazar la red actual" y pulse "Cargar red". Verá "Red cargada: 11 nodos y 9 conexiones.".
+
+6. **Permisos por API:**
+
+   ```bash
+   curl -i -X POST -H "X-API-Key: <OPERATOR_API_KEY>" -H "Content-Type: application/json" -d '{"id":"Z_X","type":"ZONE","name":"X"}' http://localhost:8001/api/v1/nodes
+   ```
+
+   Esperado: `403` con `FORBIDDEN`.
+
+7. **Persistencia:**
+
+   ```bash
+   make down && make up
+   ```
+
+   Recargue la consola: la red sigue ahí.
 
 ## Fases posteriores (fuera del alcance actual)
 

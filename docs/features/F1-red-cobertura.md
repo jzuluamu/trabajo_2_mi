@@ -1,6 +1,6 @@
 # F1 · Red de cobertura — construcción en 3 carriles paralelos
 
-- **Servicio:** `network-service` · **Estado:** 🟡 Base lista; carriles A, B y C en construcción
+- **Servicio:** `network-service` · **Estado:** ✅ Terminada (carriles A, B, C y D)
 - **Lea antes:** [02-modelo-de-grafo](../02-modelo-de-grafo.md), [03-api](../03-api.md#network-service-8001--feature-1), [06-seguridad](../06-seguridad.md), [07-testing](../07-testing-y-harness.md)
 
 ## Valor de negocio
@@ -65,20 +65,44 @@ Documentación: cada carril actualiza **su** archivo `docs/features/F1X-*.md` y 
 
 ## Criterios de aceptación de F1 completa (los verifica F1-D)
 
-- [ ] Se crean, listan, consultan y eliminan nodos y conexiones según el [contrato](../03-api.md).
-- [ ] Identificadores con formato `^[A-Z0-9_-]{1,32}$`. Si no cumplen: `VALIDATION_ERROR`.
-- [ ] Duplicados rechazados:
+- [x] Se crean, listan, consultan y eliminan nodos y conexiones según el [contrato](../03-api.md).
+- [x] Identificadores con formato `^[A-Z0-9_-]{1,32}$`. Si no cumplen: `VALIDATION_ERROR`.
+- [x] Duplicados rechazados:
   - `DUPLICATE_ID` (nodo, conexión o técnico);
   - `DUPLICATE_EDGE` (mismo par o, si es bidireccional, el par inverso).
-- [ ] Pesos `0 < weight ≤ 1440` (`INVALID_WEIGHT`), con `CHECK` también en la base de datos.
-- [ ] `SELF_LOOP`, `NODE_NOT_FOUND`, `EDGE_NOT_FOUND` y `NODE_IN_USE` según el contrato.
-- [ ] Solo las bases tienen técnicos.
-- [ ] `GET /api/v1/network` devuelve la red ordenada para los roles coordinator, operator e internal.
-- [ ] `POST /api/v1/network/import` es atómico y acepta `seed/red_demo.json`.
-- [ ] Permisos: operator recibe 403 al escribir; sin clave, 401.
-- [ ] Los datos persisten en PostgreSQL tras `make down && make up`. Las migraciones se aplican al arrancar.
-- [ ] Interfaz mínima en la consola: ver la red y, como coordinador, registrar y cargar la red demo.
-- [ ] La bidireccionalidad está justificada ([02](../02-modelo-de-grafo.md)).
+- [x] Pesos `0 < weight ≤ 1440` (`INVALID_WEIGHT`), con `CHECK` también en la base de datos.
+- [x] `SELF_LOOP`, `NODE_NOT_FOUND`, `EDGE_NOT_FOUND` y `NODE_IN_USE` según el contrato.
+- [x] Solo las bases tienen técnicos.
+- [x] `GET /api/v1/network` devuelve la red ordenada para los roles coordinator, operator e internal.
+- [x] `POST /api/v1/network/import` es atómico y acepta `seed/red_demo.json`.
+- [x] Permisos: operator recibe 403 al escribir; sin clave, 401.
+- [x] Los datos persisten en PostgreSQL tras `make down && make up`. Las migraciones se aplican al arrancar.
+- [x] Interfaz mínima en la consola: ver la red y, como coordinador, registrar y cargar la red demo.
+- [x] La bidireccionalidad está justificada ([02](../02-modelo-de-grafo.md)).
 
 ## Evidencia
-_F1-D adjunta aquí las capturas y salidas al cerrar la feature._
+Verificado el 2026-10-07 sobre `feature/F1D-integracion`.
+
+**Harness (`make test`):** network-service 242 pruebas (99 %, incluidas las de integración con PostgreSQL), routing-service 27 (100 %) y console 39 (99 %). ruff, mypy strict, bandit y pip-audit en verde.
+
+**Prueba punta a punta de la API:** `services/network-service/tests/unit/api/test_f1_end_to_end.py`. Cubre la red demo, el ciclo completo, todos los errores de F1 por HTTP, 401, 403 y la importación atómica.
+
+**Humo contra Docker** (base limpia, en un proyecto Compose aislado con `NETWORK_PORT=18001`):
+
+```text
+==> smoke F1 contra http://127.0.0.1:18001/api/v1
+  OK    importar seed/red_demo.json -> 201 {nodes: 11, edges: 9}
+  OK    leer la red (operador) -> 11 nodos y 9 conexiones
+  OK    peso -5 -> 422 INVALID_WEIGHT
+  ...   reiniciando network-service
+  OK    tras reiniciar network-service la red es idéntica (persistencia en PostgreSQL)
+OK: smoke F1 en verde
+```
+
+Con network-service detenido, `make smoke-f1` termina con error, como se espera. Al arrancar sobre una base nueva, el log muestra `Running upgrade  -> 0001`.
+
+**Consola:**
+
+| Red (coordinador) tras eliminar una conexión | Tabla de conexiones con peso y sentido | Peso `-5` rechazado |
+|---|---|---|
+| ![Red](evidencia/F1/consola-red-coordinador.jpg) | ![Conexiones](evidencia/F1/consola-conexiones.jpg) | ![INVALID_WEIGHT](evidencia/F1/consola-invalid-weight.jpg) |
