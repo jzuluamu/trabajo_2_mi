@@ -32,6 +32,7 @@ make test            # los 3 servicios (equivale a lo que corre la CI)
 make test-network    # solo network-service
 make test-routing    # solo routing-service
 make test-console    # solo console
+make smoke-f1        # humo de F1 contra la demo levantada (make up); reemplaza la red por la demo
 ```
 
 Equivalentes sin `make`, por ejemplo en Windows:
@@ -41,6 +42,7 @@ docker compose -f docker-compose.test.yml run --rm --build network-tests
 docker compose -f docker-compose.test.yml run --rm --build routing-tests
 docker compose -f docker-compose.test.yml run --rm --build console-tests
 docker compose -f docker-compose.test.yml down -v
+sh scripts/smoke_f1.sh   # en Git Bash o WSL; requiere curl
 ```
 
 Para iterar más rápido en local sin Docker (opcional, requiere [uv](https://docs.astral.sh/uv/)):

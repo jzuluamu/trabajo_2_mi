@@ -6,7 +6,7 @@ TEST_COMPOSE := docker compose -f docker-compose.test.yml
 SERVICES     := network routing console
 
 .DEFAULT_GOAL := help
-.PHONY: help env up down reset logs ps test test-network test-routing test-console lock
+.PHONY: help env up down reset logs ps test test-network test-routing test-console smoke-f1 lock
 
 help: ## Lista los comandos disponibles
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -45,6 +45,9 @@ test-routing: ## Harness de routing-service
 
 test-console: ## Harness de console
 	$(TEST_COMPOSE) run --rm --build console-tests; status=$$?; $(TEST_COMPOSE) down -v --remove-orphans >/dev/null 2>&1; exit $$status
+
+smoke-f1: ## Humo de F1 contra la demo levantada (reemplaza la red por la demo)
+	@sh scripts/smoke_f1.sh
 
 lock: ## Regenera los uv.lock tras cambiar dependencias en un pyproject.toml
 	@for s in network-service routing-service console; do \
