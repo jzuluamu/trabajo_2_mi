@@ -7,7 +7,7 @@
 Feature 4 exige una consola que integre configuración, cobertura y ruta, muestre la red y destaque el resultado. El equipo trabaja en Python.
 
 ## Decisión
-- **Streamlit** para la interfaz y **pyvis** para el grafo interactivo, con la ruta y la cobertura resaltadas (pyvis se incorpora en la Fase 1 o 2).
+- **Streamlit** para la interfaz y **pyvis** para el grafo interactivo, con la ruta y la cobertura resaltadas. Cómo se embebe de forma segura: [ADR 0006](0006-grafo-pyvis-embebido-seguro.md).
 - La consola solo consume las APIs mediante clientes HTTP (`console/clients/`). La lógica de la UI vive en módulos importables y se prueba con `streamlit.testing.v1.AppTest`.
 
 ## Alternativas consideradas
