@@ -1,15 +1,14 @@
 """Composición del repositorio concreto. DUEÑO: carril F1-B.
 
-Base de F1: devuelve el repositorio en memoria (los datos se pierden al reiniciar el contenedor).
-F1-B reemplaza el cuerpo de `build_repository` para devolver el repositorio SQLAlchemy usando
-`settings.database_url`. Ningún otro archivo debe cambiar para activar PostgreSQL.
+F1-B activa PostgreSQL: construye el engine con `settings.database_url` y devuelve el
+repositorio SQLAlchemy. Crear el engine no abre conexión.
 """
 
 from network_service.application.ports import NetworkRepository
 from network_service.config import Settings
-from network_service.infrastructure.memory_repository import InMemoryNetworkRepository
+from network_service.infrastructure.database import create_db_engine
+from network_service.infrastructure.sql_repository import SqlAlchemyNetworkRepository
 
 
 def build_repository(settings: Settings) -> NetworkRepository:
-    del settings  # F1-B lo usará (settings.database_url)
-    return InMemoryNetworkRepository()
+    return SqlAlchemyNetworkRepository(create_db_engine(settings.database_url.get_secret_value()))
