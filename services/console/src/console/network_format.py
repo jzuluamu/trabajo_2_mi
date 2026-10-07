@@ -12,8 +12,17 @@ from console.clients.http import ApiClientError
 JsonDict = dict[str, Any]
 
 TYPE_LABELS = {"BASE": "Base", "ZONE": "Zona"}
+WEIGHT_MAX_MINUTES = 1440.0
 YES_WORDS = frozenset({"si", "sí", "s", "true", "1", "disponible"})
 NO_WORDS = frozenset({"no", "n", "false", "0", "ocupado"})
+
+
+_MARKDOWN_SPECIAL = frozenset("\\`*_{}[]()<>#+-.!|~:$")
+
+
+def md_escape(text: str) -> str:
+    """Escapa Markdown en datos de la API (nombres) para que se muestren tal cual."""
+    return "".join(f"\\{char}" if char in _MARKDOWN_SPECIAL else char for char in text)
 
 
 class FormInputError(ValueError):
@@ -126,3 +135,66 @@ def error_text(error: ApiClientError) -> str:
         location = f" (archivo: {section} #{int(error.details['index']) + 1})"
     suffix = f" Campos: {', '.join(fields)}." if fields else ""
     return f"{error.message}{location}{suffix}"
+
+
+def network_kpis(network: JsonDict) -> list[tuple[str, str, str]]:
+    """Indicadores `(valor, etiqueta, ayuda)` derivados solo de la red."""
+    nodes, edges = network.get("nodes", []), network.get("edges", [])
+    bases = [n for n in nodes if n["type"] == "BASE"]
+    zones = [n for n in nodes if n["type"] == "ZONE"]
+    linked = {end for e in edges for end in (e["source"], e["target"])}
+    with_free = sum(1 for b in bases if any(t["available"] for t in b.get("technicians", [])))
+    one_way = sum(1 for e in edges if not e["bidirectional"])
+    isolated = sum(1 for z in zones if z["id"] not in linked)
+    return [
+        (str(len(bases)), "Bases", f"{with_free} con técnico libre"),
+        (str(len(zones)), "Zonas", f"{len(zones) - isolated} con trayectos"),
+        (str(len(edges)), "Trayectos", f"{one_way} de un solo sentido"),
+        (
+            str(isolated),
+            "Zonas sin conexión",
+            "ninguna base llega" if isolated else "todas conectadas",
+        ),
+    ]
+
+
+def node_card(network: JsonDict, node_id: str) -> JsonDict | None:
+    """Ficha legible de un nodo: tipo, técnicos, trayectos y un aviso si aplica."""
+    by_id = {n["id"]: n for n in network.get("nodes", [])}
+    node = by_id.get(node_id)
+    if node is None:
+        return None
+    links = []
+    for edge in network.get("edges", []):
+        if node_id not in (edge["source"], edge["target"]):
+            continue
+        outgoing = edge["source"] == node_id
+        other = by_id.get(edge["target"] if outgoing else edge["source"], {})
+        arrow = "↔" if edge["bidirectional"] else ("→" if outgoing else "←")
+        links.append(
+            {
+                "Trayecto": f"{arrow} {other.get('name', '?')}",
+                "Minutos": edge["weight"],
+                "Conexión": edge["id"],
+            }
+        )
+    technicians = node.get("technicians", [])
+    is_base = node["type"] == "BASE"
+    note = ""
+    if not links:
+        note = "Sin trayectos registrados: ninguna base puede llegar a esta zona."
+        if is_base:
+            note = "Base sin trayectos: no puede llegar a ninguna zona."
+    elif is_base and not any(t["available"] for t in technicians):
+        note = "Base sin técnicos disponibles: llega a sus zonas, pero no puede atenderlas."
+    return {
+        "title": f"{node['name']} · {TYPE_LABELS.get(node['type'], node['type'])}",
+        "id": node["id"],
+        "is_base": is_base,
+        "technicians": [
+            {"label": f"{t['name']} ({t['id']})", "available": bool(t["available"])}
+            for t in technicians
+        ],
+        "links": links,
+        "note": note,
+    }

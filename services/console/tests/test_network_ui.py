@@ -1,5 +1,6 @@
 """Interfaz mínima de F1 en la consola (AppTest + network-service falso con MockTransport)."""
 
+import base64
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from console.clients.http import HttpServiceClient
+from console.graph_view import DRAFT_ID, graph_payload
 from tests.fake_network import FakeNetworkService
 
 APP_PATH = str(Path(__file__).parents[1] / "src" / "console" / "app.py")
@@ -41,9 +43,25 @@ def _shown(elements: Any, text: str) -> bool:
     return any(element.value == text for element in elements)
 
 
-def _rows(at: AppTest, index: int) -> list[dict[str, Any]]:
-    records: list[dict[str, Any]] = at.dataframe[index].value.to_dict("records")
-    return records
+def _table(at: AppTest, column: str) -> list[dict[str, Any]]:
+    """Filas de la primera tabla que tiene la columna `column`."""
+    for frame in at.dataframe:
+        if column in frame.value.columns:
+            records: list[dict[str, Any]] = frame.value.to_dict("records")
+            return records
+    raise AssertionError(f"no hay tabla con la columna {column!r}")
+
+
+def _graph(at: AppTest, index: int = -1) -> str:
+    """HTML del grafo embebido como URL data: (el coordinador ve dos: Red y Configurar)."""
+    src = str(at.get("iframe")[index].proto.src)
+    prefix = "data:text/html;base64,"
+    assert src.startswith(prefix)
+    return base64.b64decode(src[len(prefix) :]).decode("utf-8")
+
+
+def _choose(at: AppTest, action: str) -> None:
+    at.radio(key="admin_action").set_value(action).run()
 
 
 # --- ambos roles: ver la red ------------------------------------------------------------
@@ -56,13 +74,13 @@ def test_operator_sees_network_tables_without_admin(monkeypatch: pytest.MonkeyPa
 
     assert not at.exception
     assert len(at.tabs) == 0
-    assert _rows(at, 0)[0] == {
+    assert _table(at, "Tipo")[0] == {
         "ID": "B_NORTE",
         "Tipo": "Base",
         "Nombre": "Base Norte",
         "Técnicos": "Ana (T01) ✔, Luis (T02) ✘",
     }
-    assert _rows(at, 1) == [
+    assert _table(at, "Sentido") == [
         {
             "ID": "E01",
             "Origen": "B_NORTE",
@@ -72,6 +90,34 @@ def test_operator_sees_network_tables_without_admin(monkeypatch: pytest.MonkeyPa
         }
     ]
     assert not [b for b in at.button if b.key == "submit_node"]
+
+
+def test_operator_sees_graph_kpis_and_card(monkeypatch: pytest.MonkeyPatch) -> None:
+    _use_fake(monkeypatch, FakeNetworkService("operator"))
+
+    at = _logged_in("operator-key-1234567")
+
+    payload = graph_payload(_graph(at))
+    assert [node["id"] for node in payload["nodes"]] == ["B_NORTE", "Z_CENTRO"]
+    assert payload["selected"] == "B_NORTE"
+    assert [(m.label, m.value) for m in at.metric] == [
+        ("Bases", "1"),
+        ("Zonas", "1"),
+        ("Trayectos", "1"),
+        ("Zonas sin conexión", "0"),
+    ]
+    assert _shown(at.markdown, ":green-badge[Disponible]")
+    assert _table(at, "Trayecto") == [{"Trayecto": "↔ Centro", "Minutos": 30.0, "Conexión": "E01"}]
+
+
+def test_selecting_a_zone_updates_card_and_graph_focus(monkeypatch: pytest.MonkeyPatch) -> None:
+    _use_fake(monkeypatch, FakeNetworkService("operator"))
+    at = _logged_in("operator-key-1234567")
+
+    at.selectbox(key="card_node").set_value("Z_CENTRO").run()
+
+    assert _shown(at.markdown, "#### Centro · Zona")
+    assert graph_payload(_graph(at))["selected"] == "Z_CENTRO"
 
 
 def test_refresh_button_reads_the_network_again(coordinator: FakeNetworkService) -> None:
@@ -107,6 +153,7 @@ def test_network_unavailable_shows_readable_error(coordinator: FakeNetworkServic
 
 def test_coordinator_registers_a_base_with_technicians(coordinator: FakeNetworkService) -> None:
     at = _logged_in()
+    _choose(at, "Registrar nodo")
     at.selectbox(key="node_type").set_value("BASE")
     at.text_input(key="node_id").input("B_ESTE")
     at.text_input(key="node_name").input("Base Este")
@@ -123,6 +170,7 @@ def test_coordinator_registers_a_base_with_technicians(coordinator: FakeNetworkS
 
 def test_duplicate_node_shows_contract_message(coordinator: FakeNetworkService) -> None:
     at = _logged_in()
+    _choose(at, "Registrar nodo")
     at.selectbox(key="node_type").set_value("ZONE")
     at.text_input(key="node_id").input("Z_CENTRO")
     at.text_input(key="node_name").input("Otra")
@@ -136,6 +184,7 @@ def test_zone_with_technicians_is_rejected_before_calling_the_api(
     coordinator: FakeNetworkService,
 ) -> None:
     at = _logged_in()
+    _choose(at, "Registrar nodo")
     at.selectbox(key="node_type").set_value("ZONE")
     at.text_input(key="node_id").input("Z_NUEVA")
     at.text_input(key="node_name").input("Nueva")
@@ -181,6 +230,20 @@ def test_negative_weight_shows_invalid_weight_message(coordinator: FakeNetworkSe
     assert "E02" not in coordinator.edges
 
 
+def test_edge_in_progress_is_drawn_as_preview(coordinator: FakeNetworkService) -> None:
+    at = _logged_in()
+    at.selectbox(key="edge_source").set_value("Z_CENTRO")
+    at.selectbox(key="edge_target").set_value("B_NORTE")
+    at.number_input(key="edge_weight").set_value(-5.0).run()
+
+    draft = [e for e in graph_payload(_graph(at))["edges"] if e["id"] == DRAFT_ID]
+
+    assert draft[0]["from"] == "Z_CENTRO"
+    assert draft[0]["label"] == "revisar"
+    assert any("El peso debe ser mayor que 0" in c.value for c in at.caption)
+    assert coordinator.edges.keys() == {"E01"}
+
+
 def test_edge_form_needs_nodes(monkeypatch: pytest.MonkeyPatch) -> None:
     _use_fake(monkeypatch, FakeNetworkService("coordinator", empty=True))
     at = _logged_in()
@@ -193,6 +256,7 @@ def test_edge_form_needs_nodes(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_delete_node_in_use_then_edge_then_node(coordinator: FakeNetworkService) -> None:
     at = _logged_in()
+    _choose(at, "Eliminar")
     at.selectbox(key="delete_node_id").set_value("Z_CENTRO")
 
     at.button(key="delete_node").click().run()
@@ -211,6 +275,7 @@ def test_delete_node_in_use_then_edge_then_node(coordinator: FakeNetworkService)
 
 def test_load_button_without_file_asks_for_one(coordinator: FakeNetworkService) -> None:
     at = _logged_in()
+    _choose(at, "Cargar red")
 
     at.button(key="import_network").click().run()
 
