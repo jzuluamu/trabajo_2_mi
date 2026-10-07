@@ -59,6 +59,8 @@ class HttpServiceClient:
             raise ApiClientError(
                 "SERVICE_UNAVAILABLE", f"No fue posible contactar {self.service_name}."
             ) from exc
+        if response.status_code == httpx.codes.NO_CONTENT:
+            return None
         if response.is_success:
             return response.json()
         raise self._to_error(response)
