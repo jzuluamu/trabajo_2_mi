@@ -36,7 +36,7 @@ La construyó el integrador sobre la Fase 0 para que los carriles trabajen sin p
 
 También corrige el `Makefile`: antes `make test` imprimía OK **sin ejecutar pruebas**. Ver [07](07-testing-y-harness.md).
 
-## Fase 1 — F1 en 3 carriles paralelos 🟡
+## Fase 1 — F1 en 3 carriles paralelos ✅
 
 | Carril | Entregable | Rama | Checkpoint |
 |---|---|---|---|
@@ -46,7 +46,7 @@ También corrige el `Makefile`: antes `make test` imprimía OK **sin ejecutar pr
 
 Cada carril pasa `make test` por sí solo, así que **se fusionan en cualquier orden**. Especificaciones: [F1-A](features/F1A-dominio-casos-de-uso.md), [F1-B](features/F1B-persistencia.md) y [F1-C](features/F1C-api-rest.md). Prompts para los agentes: [F1-prompts](features/F1-prompts.md).
 
-## Fase 1.D — Integración de F1 ⏳
+## Fase 1.D — Integración de F1 ✅
 
 Empieza cuando A, B y C están en `main`:
 - prueba punta a punta;

@@ -12,19 +12,19 @@ El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una
 | Carril | Qué construye | Dueño | Estado | Especificación |
 |---|---|---|---|---|
 | Base | Modelos, errores, puertos, repositorio en memoria, firmas, mapeo HTTP, Alembic, BD de pruebas | Integrador | ✅ Lista | [F1](features/F1-red-cobertura.md) |
-| F1-A | Reglas de dominio y 9 casos de uso | _(nombre)_ | ⏳ Pendiente | [F1-A](features/F1A-dominio-casos-de-uso.md) |
+| F1-A | Reglas de dominio y 9 casos de uso | _(nombre)_ | ✅ Terminada | [F1-A](features/F1A-dominio-casos-de-uso.md) |
 | F1-B | Persistencia PostgreSQL (tablas, migración, repositorio) | _(nombre)_ | ✅ Terminada (con evidencia) | [F1-B](features/F1B-persistencia.md) |
 | F1-C | API REST (esquemas, endpoints, inyección) | _(nombre)_ | ✅ Terminada (con evidencia) | [F1-C](features/F1C-api-rest.md) |
-| F1-D | Integración, interfaz mínima y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [F1-D](features/F1D-integracion.md) |
+| F1-D | Integración, interfaz mínima y evidencia (después de A, B y C) | Integrador | ✅ Terminada (con evidencia) | [F1-D](features/F1D-integracion.md) |
 
 ## Estado de features
 
 | # | Feature | Servicio | Estado | Especificación |
 |---|---|---|---|---|
-| F1 | Red de cobertura | `network-service` | 🟡 En construcción (carriles A, B y C) | [F1](features/F1-red-cobertura.md) |
+| F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
 | F2 | Consulta de cobertura (BFS) | `routing-service` | ⛔ Fuera del alcance actual | [F2](features/F2-consulta-cobertura.md) |
 | F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
-| F4 | Consola de operación | `console` | 🟡 Login y estado; F1-D agrega la interfaz mínima de la red | [F4](features/F4-consola.md) |
+| F4 | Consola de operación | `console` | 🟡 Login, estado e interfaz mínima de la red (F1-D) | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
 
@@ -33,8 +33,8 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 — Fundaciones | Docker, harness, seguridad base, contratos, documentación | ✅ Terminada |
-| 1 — F1 en 3 carriles paralelos | F1-A, F1-B y F1-C sobre la base congelada | 🟡 En curso |
-| 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ⏳ |
+| 1 — F1 en 3 carriles paralelos | F1-A, F1-B y F1-C sobre la base congelada | ✅ Terminada |
+| 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ✅ Terminada |
 | Posterior | F2, F3, F4 completas, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).

@@ -11,6 +11,7 @@ from network_service.domain.errors import (
 from network_service.domain.models import Edge, Node, NodeType, Technician
 from network_service.domain.rules import (
     edges_conflict,
+    is_identifier,
     validate_edge,
     validate_identifier,
     validate_name,
@@ -224,3 +225,10 @@ def test_edges_conflict_different_pairs_is_false() -> None:
     existing = _edge("B_NORTE", "Z_CENTRO")
 
     assert edges_conflict(new, existing) is False
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"), [("Z_CENTRO", True), ("<script>", False), ("", False)]
+)
+def test_is_identifier(value: str, expected: bool) -> None:
+    assert is_identifier(value) is expected

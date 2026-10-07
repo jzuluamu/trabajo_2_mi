@@ -63,3 +63,31 @@ def test_connection_failure_is_service_unavailable() -> None:
 
     assert error.value.code == "SERVICE_UNAVAILABLE"
     assert "network-service" in error.value.message
+
+
+def test_network_client_calls_f1_endpoints() -> None:
+    seen: list[tuple[str, str, bytes]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append((request.method, request.url.raw_path.decode(), request.content))
+        if request.method == "DELETE":
+            return httpx.Response(204)
+        return httpx.Response(201 if request.method == "POST" else 200, json={"ok": True})
+
+    with _client(httpx.MockTransport(handler), api_key="secret-coordinator") as client:
+        assert client.get_network() == {"ok": True}
+        assert client.create_node({"id": "Z1"}) == {"ok": True}
+        assert client.create_edge({"id": "E1"}) == {"ok": True}
+        assert client.import_network({"nodes": [], "edges": []}) == {"ok": True}
+        client.delete_node("Z/1")
+        client.delete_edge("E1")
+
+    assert [(method, path) for method, path, _ in seen] == [
+        ("GET", "/api/v1/network"),
+        ("POST", "/api/v1/nodes"),
+        ("POST", "/api/v1/edges"),
+        ("POST", "/api/v1/network/import"),
+        ("DELETE", "/api/v1/nodes/Z%2F1"),
+        ("DELETE", "/api/v1/edges/E1"),
+    ]
+    assert seen[1][2] == b'{"id":"Z1"}'

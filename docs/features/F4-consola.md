@@ -11,6 +11,11 @@ El equipo de atención consulta la cobertura y la alternativa de servicio sin in
 - [x] Panel de estado de los servicios, con mensaje legible si un servicio está caído.
 - [x] Clientes HTTP con traducción de errores del contrato (`ApiClientError`).
 
+## Hecho en F1-D (interfaz mínima de la red)
+- [x] Sección **Red** (ambos roles): tablas de nodos con técnicos y de conexiones con peso y sentido, botón "Actualizar".
+- [x] Pestaña **Configurar red** (coordinador): registrar base o zona con técnicos, registrar conexión, eliminar nodo o conexión y cargar un JSON con `/network/import`.
+- [x] Errores con el `message` del contrato (p. ej. `INVALID_WEIGHT`). Detalle: [F1-D](F1D-integracion.md).
+
 ## Criterios de aceptación (Fases 1 a 3)
 - [ ] **Coordinador:** formularios para registrar bases (con técnicos), zonas y conexiones; botón para cargar la red demo (`/network/import`); mensajes de validación legibles.
 - [ ] **Operador:** consulta de cobertura (base y zona opcional), ruta de menor costo (origen y destino) y mejor atención (zona).

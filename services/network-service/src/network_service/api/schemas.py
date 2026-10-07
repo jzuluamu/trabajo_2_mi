@@ -80,7 +80,8 @@ class EdgeIn(BaseModel):
     id: str = Field(max_length=256)
     source: str = Field(max_length=256)
     target: str = Field(max_length=256)
-    weight: float
+    # strict: rechaza `true` o "30" (VALIDATION_ERROR); los números pasan y el rango lo valida F1-A.
+    weight: float = Field(strict=True)
     bidirectional: bool = True
 
     def to_domain(self) -> Edge:

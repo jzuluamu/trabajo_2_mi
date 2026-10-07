@@ -128,3 +128,20 @@ def test_invalid_edge_payload_is_not_reflected(
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
     assert "DO_NOT_ECHO" not in response.text
+
+
+@pytest.mark.parametrize("weight", [True, "30"])
+def test_weight_must_be_a_json_number(
+    edge_api: tuple[TestClient, dict[str, RecordingUseCase]],
+    coordinator_headers: dict[str, str],
+    weight: object,
+) -> None:
+    client, fakes = edge_api
+
+    response = client.post(
+        "/api/v1/edges", json={**EDGE_BODY, "weight": weight}, headers=coordinator_headers
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+    assert fakes["register"].arguments is None

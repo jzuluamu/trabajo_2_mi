@@ -33,7 +33,7 @@ Ver [ADR 0004](adr/0004-auth-api-key-por-rol.md).
 ## Manejo de errores
 
 - El formato es único: `{code, message, details}`.
-- Los errores de validación **no reflejan** el valor recibido, para no devolver datos del cliente.
+- Los errores de validación **no reflejan** el valor recibido, para no devolver datos del cliente. Lo mismo vale para ids de ruta mal formados (`/nodes/<script>`): el `NODE_NOT_FOUND` / `EDGE_NOT_FOUND` responde con mensaje genérico y `details` vacío.
 - Las excepciones no controladas responden `500 INTERNAL_ERROR` genérico. El detalle va al log del servidor, nunca al cliente.
 - Uvicorn corre con `--no-server-header`.
 

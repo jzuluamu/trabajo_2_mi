@@ -34,6 +34,7 @@ Implementar las **reglas de negocio** de la red y los **9 casos de uso** que usa
 | `edges_conflict(new, existing) -> bool` | `True` si hay el mismo `(source, target)`, o si hay el par inverso y `new.bidirectional or existing.bidirectional` | — |
 
 Notas:
+- `is_identifier(value) -> bool` (agregada en F1-D) responde si `value` cumple `ID_PATTERN`; `validate_identifier` la usa.
 - **Nunca** incluya en el mensaje ni en `details` el valor inválido recibido (seguridad, [06](../06-seguridad.md)). Los ids ya validados sí pueden aparecer.
 - `validate_identifier` es sensible a mayúsculas: `"b1"` es inválido.
 
@@ -45,11 +46,11 @@ Notas:
 |---|---|
 | `RegisterNode.execute(node) -> Node` | 1) `validate_node(node)`. 2) Si `repo.get_node(node.id)` existe: `DuplicateIdError("Ya existe un nodo con id '{id}'.", node_id=id)`. 3) Por cada técnico, si `repo.technician_exists(t.id)`: `DuplicateIdError("Ya existe un técnico con id '{tid}'.", technician_id=tid)`. 4) `repo.add_node(node)` y retornar `node`. |
 | `RegisterEdge.execute(edge) -> Edge` | 1) `validate_edge(edge)`. 2) Si `repo.get_edge(edge.id)` existe: `DuplicateIdError("Ya existe una conexión con id '{id}'.", edge_id=id)`. 3) Si no existe `source`, y luego si no existe `target`: `NodeNotFoundError("El nodo '{nid}' no existe.", node_id=nid)`. 4) Para cada `e` en `repo.list_edges()`, si `edges_conflict(edge, e)`: `DuplicateEdgeError("Ya existe una conexión entre '{e.source}' y '{e.target}' ({e.id}).", edge_id=e.id)`. 5) `repo.add_edge(edge)` y retornar `edge`. |
-| `GetNode.execute(node_id) -> Node` | Retornar el nodo, o `NodeNotFoundError("El nodo '{node_id}' no existe.", node_id=node_id)`. |
+| `GetNode.execute(node_id) -> Node` | Retornar el nodo, o `NodeNotFoundError("El nodo '{node_id}' no existe.", node_id=node_id)`. Si `node_id` no cumple el formato (`is_identifier`), `NodeNotFoundError("El nodo solicitado no existe.")` sin `details` (ajuste F1-D, ver [06](../06-seguridad.md)). |
 | `ListNodes.execute() -> list[Node]` | `repo.list_nodes()`, que ya viene ordenado por id. |
 | `ListEdges.execute() -> list[Edge]` | `repo.list_edges()`, que ya viene ordenado por id. |
 | `DeleteNode.execute(node_id) -> None` | 1) Si no existe: `NodeNotFoundError`, igual que `GetNode`. 2) `uses = sorted(e.id for e in repo.list_edges() if node_id in (e.source, e.target))`; si hay alguno: `NodeInUseError("El nodo '{node_id}' tiene conexiones; elimínelas primero.", node_id=node_id, edge_ids=uses)`. 3) `repo.delete_node(node_id)`. |
-| `DeleteEdge.execute(edge_id) -> None` | 1) Si no existe: `EdgeNotFoundError("La conexión '{edge_id}' no existe.", edge_id=edge_id)`. 2) `repo.delete_edge(edge_id)`. |
+| `DeleteEdge.execute(edge_id) -> None` | 1) Si no existe: `EdgeNotFoundError("La conexión '{edge_id}' no existe.", edge_id=edge_id)`; con id mal formado, `"La conexión solicitada no existe."` sin `details`. 2) `repo.delete_edge(edge_id)`. |
 | `GetNetwork.execute() -> Network` | `Network(nodes=tuple(repo.list_nodes()), edges=tuple(repo.list_edges()))`. |
 | `ImportNetwork.execute(nodes, edges, *, replace) -> ImportSummary` | Ver el detalle debajo. |
 

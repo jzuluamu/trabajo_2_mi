@@ -17,8 +17,27 @@ from network_service.domain.errors import (
     NodeNotFoundError,
 )
 from network_service.domain.models import Edge, ImportSummary, Network, Node
-from network_service.domain.rules import edges_conflict, validate_edge, validate_node
+from network_service.domain.rules import (
+    edges_conflict,
+    is_identifier,
+    validate_edge,
+    validate_node,
+)
 from network_service.infrastructure.memory_repository import InMemoryNetworkRepository
+
+
+def _node_not_found(node_id: str) -> NodeNotFoundError:
+    """El id de la ruta no se valida: si no tiene formato válido, no se refleja (docs/06)."""
+    if is_identifier(node_id):
+        return NodeNotFoundError(f"El nodo '{node_id}' no existe.", node_id=node_id)
+    return NodeNotFoundError("El nodo solicitado no existe.")
+
+
+def _edge_not_found(edge_id: str) -> EdgeNotFoundError:
+    """Igual que `_node_not_found`, para conexiones."""
+    if is_identifier(edge_id):
+        return EdgeNotFoundError(f"La conexión '{edge_id}' no existe.", edge_id=edge_id)
+    return EdgeNotFoundError("La conexión solicitada no existe.")
 
 
 class RegisterNode:
@@ -73,7 +92,7 @@ class GetNode:
         """Devuelve el nodo o lanza NODE_NOT_FOUND."""
         node = self._repository.get_node(node_id)
         if node is None:
-            raise NodeNotFoundError(f"El nodo '{node_id}' no existe.", node_id=node_id)
+            raise _node_not_found(node_id)
         return node
 
 
@@ -102,7 +121,7 @@ class DeleteNode:
     def execute(self, node_id: str) -> None:
         """NODE_NOT_FOUND → NODE_IN_USE (si una conexión lo usa como source o target) → borrar."""
         if self._repository.get_node(node_id) is None:
-            raise NodeNotFoundError(f"El nodo '{node_id}' no existe.", node_id=node_id)
+            raise _node_not_found(node_id)
         uses = sorted(
             edge.id
             for edge in self._repository.list_edges()
@@ -124,7 +143,7 @@ class DeleteEdge:
     def execute(self, edge_id: str) -> None:
         """EDGE_NOT_FOUND → borrar."""
         if self._repository.get_edge(edge_id) is None:
-            raise EdgeNotFoundError(f"La conexión '{edge_id}' no existe.", edge_id=edge_id)
+            raise _edge_not_found(edge_id)
         self._repository.delete_edge(edge_id)
 
 

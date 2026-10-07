@@ -2,6 +2,8 @@
 
 import streamlit as st
 
+from console.components.network_admin import render_network_admin
+from console.components.network_view import load_network, render_network, show_flash
 from console.components.session import ROLE_LABELS, current_role, render_session_sidebar
 from console.components.status import render_service_status
 from console.config import get_settings
@@ -21,7 +23,16 @@ def main() -> None:
         st.info("Ingrese su API key en la barra lateral para usar la consola.")
         return
     st.write(f"Sesión iniciada como **{ROLE_LABELS[role]}**.")
-    st.info(
-        "Fase 0: la red, la cobertura y la ruta de menor costo se habilitan en las Fases 1 y 2 "
-        "(ver docs/09-fases-y-roadmap.md)."
-    )
+
+    network = load_network(settings)
+    if network is None:
+        return
+    show_flash()
+    if role != "coordinator":
+        render_network(network)
+        return
+    view_tab, admin_tab = st.tabs(["Red", "Configurar red"])
+    with view_tab:
+        render_network(network)
+    with admin_tab:
+        render_network_admin(settings, network)

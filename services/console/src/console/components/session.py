@@ -20,6 +20,15 @@ def current_api_key() -> str | None:
     return api_key if isinstance(api_key, str) else None
 
 
+def session_network_client(settings: Settings) -> NetworkClient:
+    """Cliente de network-service con la API key de la sesión (usar como context manager)."""
+    return NetworkClient(
+        str(settings.network_service_url),
+        api_key=current_api_key(),
+        timeout=settings.request_timeout_seconds,
+    )
+
+
 def _login(settings: Settings, api_key: str) -> None:
     with NetworkClient(
         str(settings.network_service_url),

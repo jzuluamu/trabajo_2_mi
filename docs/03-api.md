@@ -16,7 +16,7 @@ Leyenda: ✅ implementado · ⏳ pendiente (fase indicada)
   - conexiones: formato (`VALIDATION_ERROR`, `SELF_LOOP`, `INVALID_WEIGHT`) → `DUPLICATE_ID` → `NODE_NOT_FOUND` → `DUPLICATE_EDGE`.
 
   Detalle en [F1-A](features/F1A-dominio-casos-de-uso.md).
-- **Ids en la ruta** (`/nodes/{id}`): no se valida su formato. Un id inexistente o mal formado responde `NODE_NOT_FOUND` / `EDGE_NOT_FOUND`.
+- **Ids en la ruta** (`/nodes/{id}`): no se valida su formato. Un id inexistente o mal formado responde `NODE_NOT_FOUND` / `EDGE_NOT_FOUND`. Si el id **no** cumple el formato, la respuesta no lo refleja: `message` genérico ("El nodo solicitado no existe.") y `details` vacío (F1-D).
 - **Autenticación:** encabezado `X-API-Key`. Roles: `coordinator`, `operator` e `internal` ([06-seguridad.md](06-seguridad.md)).
 - **Errores**, siempre con la misma forma:
 
@@ -89,6 +89,7 @@ Responde `204`. Errores posibles: `NODE_NOT_FOUND` y `NODE_IN_USE` (con `details
 { "id": "E01", "source": "B_NORTE", "target": "Z_CENTRO", "weight": 30, "bidirectional": true }
 ```
 
+- `weight` debe ser un **número JSON**. `true` o `"30"` dan `VALIDATION_ERROR` (F1-D); un número fuera de rango da `INVALID_WEIGHT`.
 - Responde `201` con la conexión.
 - Errores posibles: `NODE_NOT_FOUND`, `DUPLICATE_ID`, `DUPLICATE_EDGE`, `INVALID_WEIGHT` y `SELF_LOOP`.
 
