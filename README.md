@@ -33,7 +33,7 @@ Es un trabajo académico de *Matemáticas para Informática*. Además de funcion
 | F1 | [Red de cobertura](docs/features/F1-red-cobertura.md) | `network-service` | ✅ Terminada (con evidencia) |
 | F2 | [Consulta de cobertura (BFS)](docs/features/F2-consulta-cobertura.md) | `routing-service` | ⛔ Fuera del alcance actual |
 | F3 | [Alternativa de menor costo (Dijkstra)](docs/features/F3-menor-costo.md) | `routing-service` | ⛔ Fuera del alcance actual |
-| F4 | [Consola de operación](docs/features/F4-consola.md) | `console` | 🟡 Login, estado e interfaz mínima de la red |
+| F4 | [Consola de operación](docs/features/F4-consola.md) | `console` | 🟡 Consola visual de la red (mapa interactivo) |
 
 > **Alcance actual: solo F1**, construida en paralelo por 3 personas o agentes. Ver
 > [docs/features/F1-red-cobertura.md](docs/features/F1-red-cobertura.md).
