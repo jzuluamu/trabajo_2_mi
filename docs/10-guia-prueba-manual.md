@@ -209,11 +209,54 @@ grep API_KEY .env
 
    Recargue la consola: la red sigue ahí.
 
+## F2 · Consulta de cobertura
+
+> `make smoke-f2` y "Cargar red" con *Reemplazar la red actual* **sustituyen** la red de su demo
+> por la de `seed/red_demo.json`. No hay variables nuevas en `.env`.
+
+1. **Levante la demo con la red demo cargada:**
+
+   ```bash
+   make reset && make up
+   ```
+
+   Entre a la consola como coordinador, abra **Configurar red** y cargue `seed/red_demo.json` (o ejecute `make smoke-f2`, que también la importa).
+
+2. **Harness y humo:**
+
+   ```bash
+   make test
+   ```
+
+   ```bash
+   make smoke-f2
+   ```
+
+   Esperado: `OK: smoke F2 en verde`, con los nueve pasos en `OK`.
+
+3. **Swagger:** abra <http://localhost:8002/docs>. Debe listar `GET /api/v1/coverage`.
+
+4. **API con `curl`** (use `OPERATOR_API_KEY` de su `.env`):
+
+   ```bash
+   curl -s -H "X-API-Key: <OPERATOR_API_KEY>" "http://localhost:8002/api/v1/coverage?base=B_NORTE&zone=Z_CENTRO"
+   ```
+
+   Esperado: `Z_CENTRO` cubierta en 1 tramo y `unreachable_zones` con `Z_FUENTE` y `Z_ISLA`. Con `&trace=true` aparece la traza de 16 entradas de [04](04-algoritmos-bfs.md). Con `base=B_NADA` responde `404 ORIGIN_NOT_FOUND`; con `base=Z_CENTRO`, `422 INVALID_ORIGIN`; con `zone=Z_NADA`, `404 ZONE_NOT_FOUND`; sin clave, `401`.
+
+5. **Consola:** abra <http://localhost:8501>, entre como operador o coordinador y abra la pestaña **Cobertura**.
+   1. Elija **Base Norte** y pulse "Consultar cobertura": verá 2 indicadores (7 nodos alcanzables sin contar la base, que son 6 zonas y Base Sur, y 2 zonas sin cobertura) y la tabla de tramos mínimos (Alameda y Centro a 1 tramo).
+   2. Elija la zona **Centro** y consulte: aparece en verde "Z_CENTRO está cubierta desde B_NORTE (1 tramo).".
+   3. Elija la zona **Fuente**: aparece en ámbar que no hay conexión, y no es un error. Fuente e Isla figuran en "Zonas sin cobertura".
+   4. Marque "Mostrar traza paso a paso" y consulte: el desplegable "Traza del recorrido BFS" muestra el paso a paso.
+   5. Elija **Base Sur** y la zona **Estación**: está cubierta a 2 tramos (Sur → Delicias → Estación). El trayecto Delicias → Estación es de un solo sentido, pero se recorre en esa dirección.
+
+6. **Servicio caído:** detenga network-service (`docker compose stop network-service`) y consulte la cobertura por `curl`: responde `503 NETWORK_UNAVAILABLE` sin detalles técnicos. Vuelva a levantarlo con `make up`.
+
 ## Fases posteriores (fuera del alcance actual)
 
 Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido previsto para la demo final:
 - cargar la red demo;
-- consultar la cobertura de `B_NORTE`;
 - consultar la ruta `B_NORTE → Z_CENTRO` (15 min, contra 30 por el camino de menos tramos);
 - consultar la mejor atención para `Z_COLINA` (B_SUR) y para `Z_FUENTE` (no atendible);
 - probar una zona inexistente;

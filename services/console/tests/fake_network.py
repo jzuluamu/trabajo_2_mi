@@ -1,4 +1,4 @@
-"""network-service falso servido con `httpx.MockTransport` (solo lo que usa la consola en F1).
+"""network-service y routing-service falsos servidos con `httpx.MockTransport` (F1 y F2).
 
 Reproduce la forma de las respuestas y de los errores de docs/03-api.md; no reimplementa todas
 las reglas, solo las que las pruebas de la consola necesitan observar.
@@ -40,6 +40,9 @@ class FakeNetworkService:
         self.edges: dict[str, dict[str, Any]] = {}
         self.requests: list[tuple[str, str]] = []
         self.down = False
+        self.uncovered: set[str] = set()
+        self.unknown_base = False  # routing-service responde ORIGIN_NOT_FOUND
+        self.coverage_queries: list[dict[str, str]] = []
         if not empty:
             self._load(DEMO, replace=True)
 
@@ -61,6 +64,42 @@ class FakeNetworkService:
             "edges": [self.edges[key] for key in sorted(self.edges)],
         }
 
+    def coverage(self, params: dict[str, str]) -> httpx.Response:
+        """routing-service falso: desde toda base se alcanzan las zonas salvo `uncovered`."""
+        base, zone = params["base"], params.get("zone")
+        self.coverage_queries.append(params)
+        if self.unknown_base or base not in self.nodes:
+            return _error(404, "ORIGIN_NOT_FOUND", f"La base '{base}' no existe.", node_id=base)
+        zones = sorted(k for k, n in self.nodes.items() if n["type"] == "ZONE")
+        reachable = [
+            {"node_id": z, "type": "ZONE", "hops": 1} for z in zones if z not in self.uncovered
+        ]
+        zone_info = None
+        if zone:
+            covered = zone not in self.uncovered
+            zone_info = {
+                "id": zone,
+                "covered": covered,
+                "hops": 1 if covered else None,
+                "message": f"{zone} está cubierta desde {base} (1 tramo)."
+                if covered
+                else f"{zone} no está cubierta: no hay conexión desde {base}.",
+            }
+        trace = None
+        if params.get("trace") == "true":
+            trace = [
+                {"step": 0, "action": "enqueue", "node": base, "data": {"hops": 0}},
+                {"step": 1, "action": "visit", "node": base, "data": {"hops": 0}},
+            ]
+        body = {
+            "base": base,
+            "reachable": reachable,
+            "unreachable_zones": sorted(self.uncovered),
+            "zone": zone_info,
+            "trace": trace,
+        }
+        return httpx.Response(200, json=body)
+
     def handle(self, request: httpx.Request) -> httpx.Response:
         method, path = request.method, request.url.path
         self.requests.append((method, path))
@@ -70,6 +109,8 @@ class FakeNetworkService:
             raise httpx.ConnectError("refused", request=request)
         if path == "/api/v1/auth/whoami":
             return httpx.Response(200, json={"role": self.role})
+        if (method, path) == ("GET", "/api/v1/coverage"):
+            return self.coverage(dict(request.url.params))
         writes = method != "GET"
         if writes and self.role != "coordinator":
             return _error(403, "FORBIDDEN", f"El rol '{self.role}' no tiene permiso.")

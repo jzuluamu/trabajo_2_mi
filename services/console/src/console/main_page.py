@@ -2,6 +2,7 @@
 
 import streamlit as st
 
+from console.components.coverage_view import render_coverage
 from console.components.network_admin import render_network_admin
 from console.components.network_view import load_network, render_network, show_flash
 from console.components.session import ROLE_LABELS, current_role, render_session_sidebar
@@ -29,10 +30,16 @@ def main() -> None:
         return
     show_flash()
     if role != "coordinator":
-        render_network(network)
+        view_tab, coverage_tab = st.tabs(["Red", "Cobertura"])
+        with view_tab:
+            render_network(network)
+        with coverage_tab:
+            render_coverage(settings, network)
         return
-    view_tab, admin_tab = st.tabs(["Red", "Configurar red"])
+    view_tab, coverage_tab, admin_tab = st.tabs(["Red", "Cobertura", "Configurar red"])
     with view_tab:
         render_network(network)
+    with coverage_tab:
+        render_coverage(settings, network)
     with admin_tab:
         render_network_admin(settings, network)

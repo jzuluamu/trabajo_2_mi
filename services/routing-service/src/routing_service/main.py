@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from routing_service.api import health
+from routing_service.api import coverage, health
 from routing_service.config import get_settings
 from routing_service.core.errors import register_error_handlers
 
@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
     )
     register_error_handlers(app)
     app.include_router(health.router)
+    app.include_router(coverage.router)
     return app
 
 

@@ -58,13 +58,28 @@ Especificación: [F1-D](features/F1D-integracion.md).
 
 **Checkpoint:** `make reset && make up && make test && make smoke-f1`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F1.
 
+## Fase 2 — F2 · Consulta de cobertura (BFS) ✅
+
+Se construyó sobre F1 con las mismas capas, en cinco partes que no se pisan:
+
+| Parte | Entregable |
+|---|---|
+| **F2-A** | `BreadthFirstReachability` (`domain/coverage/bfs.py`) con traza |
+| **F2-B** | `CheckCoverage` y los errores `ORIGIN_NOT_FOUND`, `INVALID_ORIGIN` y `ZONE_NOT_FOUND` |
+| **F2-C** | `HttpNetworkGateway`: lee la red de network-service y la entrega como `Graph` |
+| **F2-D** | `GET /api/v1/coverage`, esquemas, roles e inyección de dependencias |
+| **F2-E** | Pestaña **Cobertura** en la consola, `make smoke-f2`, documentación y evidencia |
+
+Especificación y evidencia: [F2](features/F2-consulta-cobertura.md).
+
+**Checkpoint:** `make reset && make up && make test && make smoke-f2`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F2.
+
 ## Fuera del alcance actual ⛔
 
 Si el alcance se amplía, se retoman en este orden:
-1. F2, cobertura con BFS ([04](04-algoritmos-bfs.md));
-2. F3, menor costo con Dijkstra ([05](05-algoritmos-dijkstra.md));
-3. F4 completa;
-4. la aceptación de los 4 escenarios del brief;
-5. el cambio de requisito docente.
+1. F3, menor costo con Dijkstra ([05](05-algoritmos-dijkstra.md));
+2. F4 completa;
+3. la aceptación de los 4 escenarios del brief;
+4. el cambio de requisito docente.
 
 Los puntos de extensión siguen preparados: `ReachabilityStrategy` y `PathFinder` en routing-service.
