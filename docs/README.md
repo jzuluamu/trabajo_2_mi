@@ -3,9 +3,9 @@
 > **Regla obligatoria** ([AGENTS.md](../AGENTS.md)): lea este índice y los documentos relacionados
 > antes de escribir código o documentación, y actualícelos en el mismo PR si cambia algo.
 
-## Alcance actual: solo Feature 1
+## Alcance actual: Features 1 y 2
 
-El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una base congelada, más un paso de integración. F2, F3 y F4 quedan **fuera del alcance actual**: su documentación se conserva como diseño de referencia. Detalle y reparto de archivos en [features/F1-red-cobertura.md](features/F1-red-cobertura.md). Prompts para los agentes en [features/F1-prompts.md](features/F1-prompts.md).
+El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre una base congelada, más un paso de integración, y después **F2 · Consulta de cobertura (BFS)**. F3 queda **fuera del alcance actual**: su documentación se conserva como diseño de referencia. Detalle de F1 y reparto de archivos en [features/F1-red-cobertura.md](features/F1-red-cobertura.md); detalle de F2 en [features/F2-consulta-cobertura.md](features/F2-consulta-cobertura.md). Prompts para los agentes de F1 en [features/F1-prompts.md](features/F1-prompts.md).
 
 ## Estado de F1 (cada carril edita solo su fila)
 
@@ -22,7 +22,7 @@ El equipo construye **F1 · Red de cobertura** en 3 carriles paralelos sobre una
 | # | Feature | Servicio | Estado | Especificación |
 |---|---|---|---|---|
 | F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
-| F2 | Consulta de cobertura (BFS) | `routing-service` | ⛔ Fuera del alcance actual | [F2](features/F2-consulta-cobertura.md) |
+| F2 | Consulta de cobertura (BFS) | `routing-service` | ✅ Terminada (con evidencia) | [F2](features/F2-consulta-cobertura.md) |
 | F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
 | F4 | Consola de operación | `console` | 🟡 Consola visual de la red: mapa interactivo y tema claro (ADR 0006) | [F4](features/F4-consola.md) |
 
@@ -35,7 +35,8 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | 0 — Fundaciones | Docker, harness, seguridad base, contratos, documentación | ✅ Terminada |
 | 1 — F1 en 3 carriles paralelos | F1-A, F1-B y F1-C sobre la base congelada | ✅ Terminada |
 | 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ✅ Terminada |
-| Posterior | F2, F3, F4 completas, aceptación y cambio docente | ⛔ Fuera del alcance actual |
+| 2 — F2 · Consulta de cobertura (BFS) | BFS, caso de uso, gateway HTTP, endpoint, pestaña de la consola y humo | ✅ Terminada |
+| Posterior | F3, F4 completa, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 

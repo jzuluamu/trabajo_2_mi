@@ -127,7 +127,7 @@ Responde `204`. Error posible: `EDGE_NOT_FOUND`.
 | Método y ruta | Roles | Estado |
 |---|---|---|
 | `GET /health` | público | ✅ |
-| `GET /api/v1/coverage` | coordinator, operator | ⏳ F2 |
+| `GET /api/v1/coverage` | coordinator, operator | ✅ F2 |
 | `GET /api/v1/routes/cheapest` | coordinator, operator | ⏳ F3 |
 | `GET /api/v1/attention/best` | coordinator, operator | ⏳ F3 |
 
@@ -148,6 +148,8 @@ Todos aceptan `trace=true` para incluir la traza paso a paso (`TraceStep`: `step
 ```
 
 - `reachable` excluye el origen y se ordena por `(hops, node_id)`.
+- `base` y `zone` siguen el formato `^[A-Z0-9_-]{1,32}$`; si no, `VALIDATION_ERROR`. `trace` vale `false` por omisión y, mientras no se pida, la respuesta lleva `"trace": null`.
+- Con `trace=true`, `trace` es la lista de `TraceStep` del BFS: `{"step": 1, "action": "visit", "node": "B_NORTE", "data": {"hops": 0}}`. `action` es `enqueue` o `visit`, y `data` trae `hops` y, en `enqueue`, `from`.
 - `zone` es `null` si no se envió `zone`. Si la zona existe pero no es alcanzable, la respuesta es `covered=false`, `hops=null` y un `message` que explica que no hay conexión.
 - Errores posibles:
   - `ORIGIN_NOT_FOUND`: la base no existe.

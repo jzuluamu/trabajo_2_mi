@@ -66,12 +66,14 @@ Resultado:
 - **Cubiertas** desde `B_NORTE`: Z_ALAMEDA, Z_CENTRO, Z_BOSQUE, Z_COLINA, Z_DELICIAS y Z_ESTACION.
 - **No cubiertas:** `Z_FUENTE`, que está en otra componente, y `Z_ISLA`, que no tiene conexiones. Para ellas la API responde `covered=false` con un mensaje, no un error.
 
+En la traza que devuelve la API, la columna "Paso" es `step`. Cada fila "Visita" es un `TraceStep` con `action="visit"` y cada nodo de "Encola" uno con `action="enqueue"` (con `data.hops` y `data.from`). El origen se encola en el paso 0. Con la red demo son 16 entradas.
+
 ## Casos que deben probarse (F2)
 
-- [ ] Alcance correcto y `hops` mínimos en la red demo (tabla anterior).
-- [ ] Red desconectada: las zonas de otra componente aparecen en `unreachable_zones`.
-- [ ] Zona aislada, sin aristas: `covered=false`.
-- [ ] Arista de un solo sentido: desde `Z_ESTACION` no se vuelve a `Z_DELICIAS`.
-- [ ] Origen inexistente: `ORIGIN_NOT_FOUND`. Origen de tipo `ZONE`: `INVALID_ORIGIN`. Zona inexistente: `ZONE_NOT_FOUND`.
-- [ ] La traza coincide paso a paso con la tabla de este documento.
-- [ ] Ciclos (Z_ALAMEDA–Z_BOSQUE–Z_CENTRO–B_NORTE): BFS termina y no repite nodos.
+- [x] Alcance correcto y `hops` mínimos en la red demo (tabla anterior).
+- [x] Red desconectada: las zonas de otra componente aparecen en `unreachable_zones`.
+- [x] Zona aislada, sin aristas: `covered=false`.
+- [x] Arista de un solo sentido: desde `Z_ESTACION` no se vuelve a `Z_DELICIAS`.
+- [x] Origen inexistente: `ORIGIN_NOT_FOUND`. Origen de tipo `ZONE`: `INVALID_ORIGIN`. Zona inexistente: `ZONE_NOT_FOUND`.
+- [x] La traza coincide paso a paso con la tabla de este documento.
+- [x] Ciclos (Z_ALAMEDA–Z_BOSQUE–Z_CENTRO–B_NORTE): BFS termina y no repite nodos.

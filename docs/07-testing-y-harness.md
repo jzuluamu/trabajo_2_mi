@@ -33,6 +33,7 @@ make test-network    # solo network-service
 make test-routing    # solo routing-service
 make test-console    # solo console
 make smoke-f1        # humo de F1 contra la demo levantada (make up); reemplaza la red por la demo
+make smoke-f2        # humo de F2 (cobertura) contra la demo levantada; también reemplaza la red por la demo
 ```
 
 Equivalentes sin `make`, por ejemplo en Windows:
