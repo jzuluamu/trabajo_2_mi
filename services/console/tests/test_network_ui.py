@@ -73,7 +73,7 @@ def test_operator_sees_network_tables_without_admin(monkeypatch: pytest.MonkeyPa
     at = _logged_in("operator-key-1234567")
 
     assert not at.exception
-    assert len(at.tabs) == 0
+    assert [tab.label for tab in at.tabs] == ["Red", "Cobertura"]
     assert _table(at, "Tipo")[0] == {
         "ID": "B_NORTE",
         "Tipo": "Base",

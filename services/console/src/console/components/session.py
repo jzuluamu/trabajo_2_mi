@@ -4,6 +4,7 @@ import streamlit as st
 
 from console.clients.http import ApiClientError
 from console.clients.network_client import NetworkClient
+from console.clients.routing_client import RoutingClient
 from console.config import Settings
 
 ROLE_LABELS = {"coordinator": "Coordinador de operaciones", "operator": "Operador de atención"}
@@ -24,6 +25,15 @@ def session_network_client(settings: Settings) -> NetworkClient:
     """Cliente de network-service con la API key de la sesión (usar como context manager)."""
     return NetworkClient(
         str(settings.network_service_url),
+        api_key=current_api_key(),
+        timeout=settings.request_timeout_seconds,
+    )
+
+
+def session_routing_client(settings: Settings) -> RoutingClient:
+    """Cliente de routing-service con la API key de la sesión (usar como context manager)."""
+    return RoutingClient(
+        str(settings.routing_service_url),
         api_key=current_api_key(),
         timeout=settings.request_timeout_seconds,
     )
