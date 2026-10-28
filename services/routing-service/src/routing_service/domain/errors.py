@@ -14,6 +14,18 @@ class NodeNotFoundError(DomainError):
     code = "NODE_NOT_FOUND"
 
 
+class OriginNotFoundError(DomainError):
+    code = "ORIGIN_NOT_FOUND"
+
+
+class InvalidOriginError(DomainError):
+    code = "INVALID_ORIGIN"
+
+
+class ZoneNotFoundError(DomainError):
+    code = "ZONE_NOT_FOUND"
+
+
 class DuplicateNodeError(DomainError):
     code = "DUPLICATE_ID"
 
