@@ -24,7 +24,7 @@ El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre un
 | F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
 | F2 | Consulta de cobertura (BFS) | `routing-service` | ✅ Terminada (con evidencia) | [F2](features/F2-consulta-cobertura.md) |
 | F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
-| F4 | Consola de operación | `console` | 🟡 Consola visual de la red: mapa interactivo y tema claro (ADR 0006) | [F4](features/F4-consola.md) |
+| F4 | Consola de operación | `web` (React, ADR 0007) · `console` (Streamlit, en retiro) | 🟡 Consola web con paridad de F1 y F2 y la cobertura resaltada en el mapa; falta F3 | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
 
@@ -36,6 +36,7 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | 1 — F1 en 3 carriles paralelos | F1-A, F1-B y F1-C sobre la base congelada | ✅ Terminada |
 | 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ✅ Terminada |
 | 2 — F2 · Consulta de cobertura (BFS) | BFS, caso de uso, gateway HTTP, endpoint, pestaña de la consola y humo | ✅ Terminada |
+| F4 · Consola web | SPA React + BFF ([ADR 0007](adr/0007-consola-web-react-bff.md)), conviviendo con Streamlit hasta validar la paridad | 🟡 En progreso |
 | Posterior | F3, F4 completa, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
@@ -68,5 +69,6 @@ Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 | [0002](adr/0002-microservicios-por-contexto.md) | Microservicios por contexto de negocio, no por algoritmo |
 | [0003](adr/0003-modelo-de-grafo.md) | Técnicos como atributo de la base y grafo dirigido con aristas bidireccionales |
 | [0004](adr/0004-auth-api-key-por-rol.md) | Autenticación por API key por rol |
-| [0005](adr/0005-consola-streamlit.md) | Consola en Streamlit |
-| [0006](adr/0006-grafo-pyvis-embebido-seguro.md) | Grafo interactivo con pyvis embebido de forma segura |
+| [0005](adr/0005-consola-streamlit.md) | Consola en Streamlit (en retiro: la reemplaza 0007) |
+| [0006](adr/0006-grafo-pyvis-embebido-seguro.md) | Grafo interactivo con pyvis embebido de forma segura (en retiro con 0005) |
+| [0007](adr/0007-consola-web-react-bff.md) | Consola web en React con un BFF que guarda la API key |

@@ -74,6 +74,18 @@ Especificación y evidencia: [F2](features/F2-consulta-cobertura.md).
 
 **Checkpoint:** `make reset && make up && make test && make smoke-f2`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F2.
 
+## F4 · Consola web (React) 🟡
+
+Reemplaza la consola Streamlit por una SPA servida por un BFF que guarda la API key ([ADR 0007](adr/0007-consola-web-react-bff.md)):
+- paridad con lo que hace Streamlit en F1 y F2;
+- la cobertura resaltada en el mapa;
+- clic en un nodo para abrir su ficha;
+- tema oscuro y diseño móvil.
+
+Ambas consolas conviven hasta validar la paridad.
+
+**Checkpoint:** `make up && make test`, más el recorrido de la guía [10](10-guia-prueba-manual.md#consola-web-react). Después, un PR aparte retira `services/console` y marca ADR 0005 y 0006 como reemplazados.
+
 ## Fuera del alcance actual ⛔
 
 Si el alcance se amplía, se retoman en este orden:

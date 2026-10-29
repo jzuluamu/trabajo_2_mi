@@ -17,21 +17,32 @@ Cada servicio tiene una imagen Docker `test` (multi-stage) que ejecuta `scripts/
 | Dependencias | `pip-audit` sobre `uv.lock` | hay un CVE conocido |
 | Pruebas | `pytest` + `pytest-cov` | falla una prueba o la cobertura queda **< 85 %** (con ramas) |
 
+La consola web (`services/web`, [ADR 0007](adr/0007-consola-web-react-bff.md)) tiene su propio harness, con la misma exigencia y herramientas de Node:
+
+| Paso | Herramienta | Falla si… |
+|---|---|---|
+| Lint | `eslint` con `typescript-eslint` `strictTypeChecked`, `react-hooks` y `--max-warnings 0` | hay errores de estilo, tipos inseguros (`any`) o reglas de hooks |
+| Formato | `prettier --check` | el código no está formateado |
+| Tipos | `tsc` estricto (`npm run typecheck`: SPA, BFF y configuración) | hay errores de tipos |
+| Dependencias | `npm audit` sobre `package-lock.json` | hay un CVE conocido |
+| Pruebas | `vitest` + `@vitest/coverage-v8` | falla una prueba o la cobertura de líneas, ramas, funciones o sentencias queda **< 85 %** |
+
 En network-service, `make test-network` levanta además un **PostgreSQL efímero** (`network-db` en `docker-compose.test.yml`) y define `TEST_DATABASE_URL`. Así **se ejecutan** las pruebas de `tests/integration/` (migraciones y repositorio SQL). Al terminar, el contenedor se elimina. Sin esa variable, por ejemplo en una corrida local con `uv run pytest`, esas pruebas se omiten (`SKIPPED`).
 
 ### ¿Cómo sé que el harness corrió de verdad?
 
-Cada servicio imprime los pasos `==> ruff`, `==> mypy`, `==> bandit`, `==> pip-audit` y `==> pytest`, y luego `N passed` con la cobertura. **Si `make test` imprime solo `OK` sin esos pasos, el harness no se ejecutó.**
+Cada servicio Python imprime los pasos `==> ruff`, `==> mypy`, `==> bandit`, `==> pip-audit` y `==> pytest`, y luego `N passed` con la cobertura. La consola web imprime `==> eslint`, `==> prettier`, `==> tsc`, `==> npm audit` y `==> vitest`, y luego `Tests N passed` y la tabla de cobertura. **Si `make test` imprime solo `OK` sin esos pasos, el harness no se ejecutó.**
 
 Esto ocurrió en la Fase 0: el `Makefile` usaba una regla de patrón `test-%` con targets `.PHONY`, y GNU make no aplica reglas de patrón a targets `.PHONY`. Por eso los targets `test-*` son explícitos. Se verificó también el caso negativo: una prueba rota hace terminar `make test` con `Error 1`.
 
 ## Comandos
 
 ```bash
-make test            # los 3 servicios (equivale a lo que corre la CI)
+make test            # los 4 servicios (equivale a lo que corre la CI)
 make test-network    # solo network-service
 make test-routing    # solo routing-service
-make test-console    # solo console
+make test-console    # solo console (Streamlit, en retiro)
+make test-web        # solo la consola web (React + BFF)
 make smoke-f1        # humo de F1 contra la demo levantada (make up); reemplaza la red por la demo
 make smoke-f2        # humo de F2 (cobertura) contra la demo levantada; también reemplaza la red por la demo
 ```
@@ -42,6 +53,7 @@ Equivalentes sin `make`, por ejemplo en Windows:
 docker compose -f docker-compose.test.yml run --rm --build network-tests
 docker compose -f docker-compose.test.yml run --rm --build routing-tests
 docker compose -f docker-compose.test.yml run --rm --build console-tests
+docker compose -f docker-compose.test.yml run --rm --build web-tests
 docker compose -f docker-compose.test.yml down -v
 sh scripts/smoke_f1.sh   # en Git Bash o WSL; requiere curl
 ```
@@ -51,6 +63,15 @@ Para iterar más rápido en local sin Docker (opcional, requiere [uv](https://do
 ```bash
 cd services/routing-service && uv sync && uv run pytest
 ```
+
+En la consola web, con Node 24 o desde el contenedor:
+
+```bash
+cd services/web && npm ci && npx vitest          # modo watch
+npm run dev:server & npm run dev                  # BFF en :8080 y Vite en :5173 (requiere los servicios en marcha)
+```
+
+Para el modo `dev`, defina `NETWORK_SERVICE_URL` y `ROUTING_SERVICE_URL` apuntando a los puertos publicados (`http://localhost:8001` y `http://localhost:8002`).
 
 ## Organización de pruebas
 
@@ -73,7 +94,13 @@ Lineamientos:
   - en routing-service, un `NetworkGateway` en memoria (ver `tests/unit/test_contracts.py`);
   - en network-service, un repositorio en memoria;
   - en la consola, `httpx.MockTransport` o `monkeypatch` de los clientes.
-- **Consola:** se usa `streamlit.testing.v1.AppTest`. La lógica vive en módulos importables (`main_page.py`, `components/`) y `app.py` solo delega.
+- **Consola Streamlit:** se usa `streamlit.testing.v1.AppTest`. La lógica vive en módulos importables (`main_page.py`, `components/`) y `app.py` solo delega.
+- **Consola web** (`services/web/tests/`):
+  - `server/`: el BFF con un `fetch` falso que imita a los servicios (sesión, CSRF, lista blanca, caídas, caducidad y cabeceras);
+  - `lib/`: funciones puras (formatos, modelo del mapa, cliente HTTP);
+  - `ui/`: Testing Library + `user-event` contra un **BFF falso** (`tests/ui/fake-bff.ts`), por rol y por pestaña.
+  - En jsdom, Cytoscape corre en modo *headless* (`tests/setup.ts`) y las pruebas simulan clics en nodos con `lastCy()`.
+  - Se excluyen de la cobertura solo los puntos de entrada sin lógica (`src/main.tsx` y `server/index.ts`), como `app.py` en Streamlit.
 - **Errores:** todo código de error del [contrato](03-api.md) que emita un servicio tiene al menos una prueba.
 
 ## Pruebas de aceptación (Fase 3)

@@ -1,6 +1,6 @@
 # 0005 · Consola en Streamlit
 
-- **Estado:** Aceptado
+- **Estado:** Aceptado · en retiro: lo reemplaza [0007](0007-consola-web-react-bff.md) cuando la consola web alcance paridad
 - **Fecha:** 2026-10-05
 
 ## Contexto

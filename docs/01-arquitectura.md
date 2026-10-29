@@ -4,9 +4,11 @@
 
 ```mermaid
 flowchart LR
-    U((Coordinador / Operador)) -->|navegador| C[console<br/>Streamlit :8501]
-    C -->|X-API-Key del usuario| N[network-service<br/>FastAPI :8001]
-    C -->|X-API-Key del usuario| R[routing-service<br/>FastAPI :8002]
+    U((Coordinador / Operador)) -->|navegador, cookie de sesión| W[web<br/>SPA React + BFF Hono :8080]
+    W -->|X-API-Key de la sesión| N[network-service<br/>FastAPI :8001]
+    W -->|X-API-Key de la sesión| R[routing-service<br/>FastAPI :8002]
+    C[console<br/>Streamlit :8501<br/>en retiro] -.->|X-API-Key del usuario| N
+    C -.-> R
     R -->|INTERNAL_API_KEY<br/>GET /api/v1/network| N
     N --> DB[(PostgreSQL 16)]
 ```
@@ -15,7 +17,8 @@ flowchart LR
 |---|---|---|---|---|
 | `network-service` | Dueño de la red: registra, valida y entrega la red | Con estado | PostgreSQL | F1 |
 | `routing-service` | Calcula la cobertura y el menor costo sobre una copia de la red | Sin estado | Ninguna | F2, F3 |
-| `console` | Interfaz del coordinador y del operador; solo habla HTTP | Sesión por usuario | Ninguna | F4 |
+| `web` | Interfaz del coordinador y del operador: SPA React servida por un BFF que guarda la API key en la sesión del servidor ([ADR 0007](adr/0007-consola-web-react-bff.md)) | Sesión por usuario (memoria) | Ninguna | F4 |
+| `console` | Consola Streamlit anterior; convive con `web` hasta validar la paridad | Sesión por usuario | Ninguna | F4 |
 | `db` | Almacenamiento | — | Volumen `pgdata` | — |
 
 Redes Docker:
@@ -34,11 +37,11 @@ BFS y Dijkstra comparten el mismo grafo en memoria. Separarlos en dos servicios 
 ```mermaid
 sequenceDiagram
     actor O as Operador
-    participant C as console
+    participant C as web (BFF)
     participant R as routing-service
     participant N as network-service
-    O->>C: Consultar ruta B_NORTE → Z_CENTRO
-    C->>R: GET /api/v1/routes/cheapest?origin=B_NORTE&destination=Z_CENTRO (X-API-Key operador)
+    O->>C: Consultar ruta B_NORTE → Z_CENTRO (cookie de sesión)
+    C->>R: GET /api/v1/routes/cheapest?origin=B_NORTE&destination=Z_CENTRO (X-API-Key de la sesión)
     R->>N: GET /api/v1/network (X-API-Key interna)
     N-->>R: {nodes, edges}
     R->>R: construir Graph + Dijkstra

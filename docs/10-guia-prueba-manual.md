@@ -23,7 +23,7 @@ Paso a paso para que una **persona** compruebe cada fase. Requisitos: Docker Des
    make up
    ```
 
-5. Compruebe que `db`, `network-service`, `routing-service` y `console` estén `Up (healthy)`, y que ninguno quede en `Restarting`:
+5. Compruebe que `db`, `network-service`, `routing-service`, `console` y `web` estén `Up (healthy)`, y que ninguno quede en `Restarting`:
 
    ```bash
    docker compose ps
@@ -35,7 +35,7 @@ Paso a paso para que una **persona** compruebe cada fase. Requisitos: Docker Des
    make test
    ```
 
-   Debe ver, **por cada servicio**, los pasos `==> ruff … ==> pytest` y `N passed`. Al final debe aparecer `OK: harness en verde para: network routing console`. Si solo aparece `OK`, sin esos pasos, su copia está desactualizada: haga `git pull`.
+   Debe ver, **por cada servicio**, los pasos del harness (`==> ruff … ==> pytest` en Python y `==> eslint … ==> vitest` en la consola web) y `N passed`. Al final debe aparecer `OK: harness en verde para: network routing console web`. Si solo aparece `OK`, sin esos pasos, su copia está desactualizada: haga `git pull`.
 
 ## Configurar `.env` (una sola vez)
 
@@ -52,7 +52,7 @@ Crea `.env` a partir de `.env.example` y reemplaza cada `CHANGE_ME_*` por un sec
 | `COORDINATOR_API_KEY` | La genera `make env` | Úsela para iniciar sesión como **coordinador** |
 | `OPERATOR_API_KEY` | La genera `make env` | Úsela para iniciar sesión como **operador** |
 | `INTERNAL_API_KEY` | La genera `make env` | Solo entre servicios; la consola la rechaza |
-| `NETWORK_PORT`, `ROUTING_PORT`, `CONSOLE_PORT` | Solo si el puerto está ocupado | Por defecto 8001, 8002 y 8501 |
+| `NETWORK_PORT`, `ROUTING_PORT`, `CONSOLE_PORT`, `WEB_PORT` | Solo si el puerto está ocupado | Por defecto 8001, 8002, 8501 y 8080. `WEB_PORT` es nueva (consola web); si su `.env` no la tiene, se usa 8080 |
 | `LOG_LEVEL` | Opcional | `DEBUG` para más detalle |
 
 Si edita las claves a mano, deben tener al menos 16 caracteres, ser distintas entre sí y no empezar por `CHANGE_ME`. Si no cumplen, el servicio no arranca. Revise el motivo con `make logs`.
@@ -79,7 +79,7 @@ grep API_KEY .env
    make ps
    ```
 
-   Esperado: `db`, `network-service`, `routing-service` y `console` en estado `healthy`.
+   Esperado: `db`, `network-service`, `routing-service`, `console` y `web` en estado `healthy`.
 
 3. **Salud de las APIs:**
 
@@ -136,7 +136,7 @@ grep API_KEY .env
    make test
    ```
 
-   Esperado: `OK: harness en verde para: network routing console`.
+   Esperado: `OK: harness en verde para: network routing console web`.
 
 9. **Apagar:**
 
@@ -253,6 +253,71 @@ grep API_KEY .env
 
 6. **Servicio caído:** detenga network-service (`docker compose stop network-service`) y consulte la cobertura por `curl`: responde `503 NETWORK_UNAVAILABLE` sin detalles técnicos. Vuelva a levantarlo con `make up`.
 
+## Consola web (React)
+
+> Consola nueva ([ADR 0007](adr/0007-consola-web-react-bff.md)) en <http://localhost:8080>. Convive con
+> Streamlit (<http://localhost:8501>) hasta que este recorrido pase completo. No hace falta cambiar
+> `.env`: `WEB_PORT` es opcional (8080 por defecto).
+
+1. **Levantar y verificar:**
+
+   ```bash
+   make up
+   ```
+
+   ```bash
+   make test-web
+   ```
+
+   Esperado: `web` aparece *healthy* en `make ps`, y `make test-web` termina con `Tests N passed` y la cobertura ≥ 85 %.
+
+2. **La clave no llega al navegador:** abra <http://localhost:8080>, pegue `OPERATOR_API_KEY` en "Clave de acceso" y pulse "Entrar". En las herramientas del navegador (*Application → Cookies*) verá solo `sc_session` (`HttpOnly`, `SameSite=Strict`) con un valor aleatorio, distinto de su clave. En *Local Storage* solo aparece `sc-theme` (el tema).
+
+3. **Inicio de sesión:**
+   1. Una clave incorrecta muestra "API key inválida." bajo el campo.
+   2. `INTERNAL_API_KEY` muestra "Esta clave no corresponde a un usuario de la consola.".
+   3. El operador ve las pestañas **Red** y **Cobertura**. El coordinador ve además **Configurar red**.
+   4. La cabecera dice "Todo en línea".
+
+4. **Red** (con la red demo cargada):
+   1. La interfaz es blanca y gris, y el mapa abre completo, sin resaltado.
+   2. Indicadores: 3 bases (2 con técnico libre), 8 zonas (7 con trayectos), 9 trayectos (1 de un solo sentido) y 1 zona sin conexión.
+   3. **Haga clic en Isla en el mapa:** el detalle cambia a "Isla" con el aviso "Sin trayectos registrados…" y el mapa resalta Isla en azul. Haga clic en el fondo: se quita el resaltado.
+   4. En "Ver detalle de" elija **Estación**: su trayecto dice "solo llegada (desde allá)".
+   5. Pase el mouse sobre el trayecto Delicias → Estación: "Delicias → Estación · 7 min · solo ida (E08)".
+   6. Arrastre un nodo, cambie a **Cobertura** y vuelva: el nodo sigue donde lo dejó.
+   7. "Ver como tabla (accesible)" muestra las mismas bases, zonas y conexiones.
+
+5. **Cobertura:**
+   1. Base de partida "Base Norte", "¿Revisar una zona en particular?" → **Fuente**, y "Ver cobertura". Arriba aparece "Base Norte llega a 6 zonas y 1 base. Quedan sin cobertura Fuente e Isla.", y en ámbar "Fuente no está cubierta / No hay ningún camino desde Base Norte hasta Fuente.".
+   2. En el mapa, Base Norte es el origen (azul con anillo ámbar), cada lugar alcanzado se pinta de azul y dice "N tramos", y Fuente e Isla dicen "sin cobertura". Base Oeste queda atenuada.
+   3. "Lugares a su alcance" agrupa por distancia: "A 1 tramo: Alameda, Centro"… "A 4 tramos: Base Sur, Estación".
+   4. Con "Incluir el recorrido paso a paso", el botón "Ver el recorrido paso a paso (16 pasos)" despliega la traza con nombres.
+   5. "¿Cómo se calcula?" explica la regla.
+
+6. **Configurar red** (coordinador):
+   1. *Nueva base o zona*: deje "Base", escriba el nombre `Base Este` y verá el identificador `B_ESTE` ya propuesto. Escriba `Sara` como técnico 1 y pulse "Agregar base": aparece "Listo: se agregó Base Este.".
+   2. Repita con el nombre `Base Este`: el identificador propuesto pasa a `B_ESTE_2`. Cámbielo a `B_ESTE` y pulse "Agregar base": verá "Ya existe un nodo con id 'B_ESTE'.".
+   3. *Nueva conexión*: Desde "Base Este", Hasta "Isla", minutos `-5`. El identificador propuesto es `E10`. Antes de guardar, el mapa dibuja la línea punteada roja con "revisar". Pulse "Guardar conexión": verá el mensaje de `INVALID_WEIGHT`. Cambie a `12`: la vista previa pasa a ámbar. Guarde: "Listo: se conectó Base Este con Isla (12 min).".
+   4. *Eliminar*: elija el lugar "Base Este". Verá "Antes elimine su conexión: Base Este ↔ Isla · 12 min." y el botón deshabilitado. Elimine esa conexión (con confirmación) y luego el lugar.
+   5. *Cargar archivo*: arrastre `seed/red_demo.json` al área (o haga clic para elegirlo), deje "Reemplazar todo" y pulse "Cargar red": "Red cargada: 11 lugares y 9 conexiones.".
+
+7. **Tema y móvil:**
+   1. El botón del sol o la luna cambia entre claro, oscuro y "Según el sistema". El mapa cambia de paleta y la preferencia se recuerda al recargar.
+   2. Con el navegador a 375 px de ancho (modo dispositivo), no hay desplazamiento horizontal, el estado del sistema aparece bajo la cabecera y los controles del mapa quedan en una fila.
+
+8. **Caída de un servicio:**
+
+   ```bash
+   docker compose stop routing-service
+   ```
+
+   En la cabecera, "Consultas: sin conexión" aparece en menos de 15 s. Una consulta de cobertura muestra "No fue posible contactar routing-service." sin romper la página. Vuelva a levantarlo:
+
+   ```bash
+   docker compose start routing-service
+   ```
+
 ## Fases posteriores (fuera del alcance actual)
 
 Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido previsto para la demo final:
@@ -268,7 +333,8 @@ Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido pr
 |---|---|
 | `Falta .env` | Ejecute `make env` |
 | Un servicio queda `unhealthy` o reinicia | Ejecute `make logs`. Suele ser una clave inválida en `.env` |
-| `port is already allocated` | Cambie `*_PORT` en `.env` |
+| `port is already allocated` | Cambie `*_PORT` en `.env` (o detenga la otra copia del proyecto que usa esos puertos) |
+| La consola web pide iniciar sesión otra vez tras `make up` | Es lo esperado: las sesiones del BFF viven en memoria y se pierden al reconstruir el contenedor `web` |
 | Error de autenticación de Postgres tras editar `.env` | Ejecute `make reset` para recrear el volumen con la nueva contraseña |
 | `network-service` reinicia con `Can't locate revision identified by '…'` | Su volumen tiene migraciones de otra rama o de un experimento. Ejecute `make reset && make up` (borra los datos locales) |
 | `make test` imprime solo `OK` sin los pasos `==>` | Tiene el `Makefile` anterior. Haga `git pull` en `main` |
