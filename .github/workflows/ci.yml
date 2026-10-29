@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [network, routing, console]
+        service: [network, routing, console, web]
     steps:
       - uses: actions/checkout@v4
       - name: Harness del servicio (lint, tipos, seguridad, pruebas)

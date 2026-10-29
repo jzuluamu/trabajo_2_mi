@@ -4,6 +4,7 @@
 /services/routing-service/src/routing_service/domain/coverage/       @jzuluamu
 /services/routing-service/src/routing_service/domain/cheapest_path/  @jzuluamu
 /services/console/                                        @jzuluamu
+/services/web/                                            @jzuluamu
 # Contratos y dominio compartido: requieren revisión de los dueños afectados
 /docs/03-api.md                                           @jzuluamu
 /services/routing-service/src/routing_service/domain/graph.py        @jzuluamu

@@ -27,3 +27,5 @@ services:
     build: { context: ./services/routing-service, target: test }
   console-tests:
     build: { context: ./services/console, target: test }
+  web-tests:
+    build: { context: ./services/web, target: test }
