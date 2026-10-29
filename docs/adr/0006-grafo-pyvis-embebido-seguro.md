@@ -1,6 +1,6 @@
 # 0006 · Grafo interactivo con pyvis embebido de forma segura
 
-- **Estado:** Aceptado
+- **Estado:** Aceptado · en retiro con la consola Streamlit (ver [0007](0007-consola-web-react-bff.md))
 - **Fecha:** 2026-10-07
 
 ## Contexto

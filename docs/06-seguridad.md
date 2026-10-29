@@ -19,7 +19,7 @@ Ver [ADR 0004](adr/0004-auth-api-key-por-rol.md).
   - tiene menos de 16 caracteres;
   - coincide con la de otro rol.
 - La autorización es una dependencia FastAPI `require_roles(...)` (`core/security.py`), declarada en cada endpoint.
-- La consola **no guarda claves en su configuración**. Cada usuario ingresa la suya, y la consola obtiene su rol con `/auth/whoami`. La clave vive solo en la sesión del servidor Streamlit.
+- La consola **no guarda claves en su configuración**. Cada usuario ingresa la suya, y la consola obtiene su rol con `/auth/whoami`. La clave vive solo en la sesión del servidor: en el BFF de la consola web ([ADR 0007](adr/0007-consola-web-react-bff.md)) o en la sesión de Streamlit. **Nunca llega al almacenamiento del navegador.**
 
 ## Validación de entradas
 
@@ -37,7 +37,32 @@ Ver [ADR 0004](adr/0004-auth-api-key-por-rol.md).
 - Las excepciones no controladas responden `500 INTERNAL_ERROR` genérico. El detalle va al log del servidor, nunca al cliente.
 - Uvicorn corre con `--no-server-header`.
 
-## Consola: grafo embebido
+## Consola web: BFF y sesión
+
+Ver [ADR 0007](adr/0007-consola-web-react-bff.md) y [F4](features/F4-consola.md#endpoints-del-bff-internos-de-la-consola-no-son-parte-del-contrato).
+
+- **La clave no llega al navegador:**
+  - `POST /bff/session` la valida con `/auth/whoami` y la guarda en memoria del BFF;
+  - el navegador recibe una cookie `sc_session` (`HttpOnly`, `SameSite=Strict`, `Path=/`) con un id aleatorio de 256 bits;
+  - cada inicio de sesión crea un id nuevo y descarta el anterior;
+  - la sesión caduca tras 8 h sin uso, y el BFF guarda como máximo 1000 sesiones.
+- **CSRF:** los métodos que modifican exigen `X-ServicioCerca: 1`, que un formulario de otro sitio no puede enviar. La cookie `SameSite=Strict` es la segunda barrera.
+- **Proxy con lista blanca:**
+  - solo las rutas del [contrato](03-api.md), por método;
+  - los ids en la ruta deben cumplir `[A-Za-z0-9_-]{1,64}`, lo que impide el path traversal (`..%2F`);
+  - el resto responde `404 NOT_FOUND` sin contactar el servicio;
+  - si un servicio responde 401, el BFF cierra la sesión.
+- **Cabeceras:**
+  - CSP con `default-src 'self'`, `script-src 'self'` (sin scripts en línea ni `eval`), `connect-src 'self'`, `object-src 'none'` y `frame-ancestors 'none'`;
+  - `style-src` admite `'unsafe-inline'` porque Radix, sonner y Cytoscape fijan estilos en línea;
+  - `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` y `Cache-Control: no-store` en `/bff`.
+- **Errores:** se usa el formato `{code, message, details}` y no se refleja la entrada. Un error inesperado responde `500 INTERNAL_ERROR` genérico, y el detalle va solo al log.
+- **Cuerpos:** máximo 2 MB (`PAYLOAD_TOO_LARGE`); la importación de red es el caso más grande.
+- **Datos de la API:** React escapa el texto. Cytoscape dibuja en un canvas y muestra las etiquetas como texto plano. No se usa `dangerouslySetInnerHTML`.
+- **Contenedor:** `node:24.19.0-alpine3.24` fijado, usuario no root `app`, `read_only`, `cap_drop: ALL` y `no-new-privileges`. Solo se instalan las dependencias del BFF (`hono`, `@hono/node-server`), y el puerto se publica en `127.0.0.1`.
+- **Límite conocido:** las sesiones viven en memoria, así que reiniciar el contenedor `web` cierra todas. Con varias réplicas haría falta un almacén compartido.
+
+## Consola Streamlit (en retiro): grafo embebido
 
 Ver [ADR 0006](adr/0006-grafo-pyvis-embebido-seguro.md):
 - el mapa va en un iframe con **origen opaco** (URL `data:`);
@@ -63,12 +88,13 @@ Ver [ADR 0006](adr/0006-grafo-pyvis-embebido-seguro.md):
 
 ## Verificación automática (harness)
 
-- `bandit`: análisis estático de seguridad del código.
-- `pip-audit`: CVEs conocidos en las dependencias bloqueadas.
+- `bandit`: análisis estático de seguridad del código Python.
+- `pip-audit` y `npm audit`: CVEs conocidos en las dependencias bloqueadas (`uv.lock` y `package-lock.json`).
 - Pruebas de seguridad:
   - 401 sin clave o con clave inválida, y 403 por rol;
   - claves débiles o de ejemplo rechazadas;
-  - errores 500 sin filtrar información interna.
+  - errores 500 sin filtrar información interna;
+  - en el BFF: la cookie no contiene la clave, CSRF, lista blanca y path traversal, caducidad de la sesión, CSP y límite de tamaño (`services/web/tests/server/`).
 
 ## Límites conocidos (aceptados para el MVP)
 

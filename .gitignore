@@ -15,6 +15,9 @@ downloads/
 eggs/
 .eggs/
 lib/
+# La consola web (services/web) tiene carpetas lib/ de código fuente, no de un entorno virtual.
+!services/web/src/lib/
+!services/web/tests/lib/
 lib64/
 parts/
 sdist/
