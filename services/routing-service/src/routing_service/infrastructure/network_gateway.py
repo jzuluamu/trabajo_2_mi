@@ -7,6 +7,7 @@ import httpx
 from fastapi import status
 
 from routing_service.core.errors import AppError
+from routing_service.domain.errors import DuplicateNodeError, NodeNotFoundError
 from routing_service.domain.graph import Graph, Node, NodeType, Technician
 
 logger = logging.getLogger(__name__)
@@ -79,7 +80,14 @@ class HttpNetworkGateway:
                     float(edge["weight"]),
                     bidirectional=bool(edge["bidirectional"]),
                 )
-        except (KeyError, TypeError, ValueError, AttributeError) as exc:
+        except (
+            KeyError,
+            TypeError,
+            ValueError,
+            AttributeError,
+            NodeNotFoundError,
+            DuplicateNodeError,
+        ) as exc:
             logger.error("La red recibida no cumple el contrato: %s", type(exc).__name__)
             raise _unavailable() from exc
         return graph
