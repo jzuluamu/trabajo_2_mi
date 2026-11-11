@@ -120,7 +120,13 @@ Verificado el 2026-11-11 sobre `feature/F3B-casos-de-uso`.
   - Si un `PathFinder` informa `found=True` sin costo o sin tramos, se lanza `RuntimeError` (viola el contrato del puerto; evita `assert`, que bandit/ruff rechazan en `src`).
 
 ### F3-C
-_Pendiente._
+Verificado el 2026-11-11 sobre `feature/F3C-api-rest`.
+
+- **Implementación:** `api/routes.py` y `api/attention.py` publican los endpoints F3 con roles `coordinator` y `operator`, validación de ids por patrón, `trace=null` por defecto y serialización de conexiones como `from`/`to`. `api/errors.py` centraliza el mapeo de errores y `api/trace.py` comparte el esquema de traza con `/coverage`.
+- **Gateway:** las redes incoherentes (nodo inexistente o duplicado) responden `503 NETWORK_UNAVAILABLE`; `InvalidWeightError` se conserva y responde `422 INVALID_WEIGHT`.
+- **Pruebas:** `tests/unit/api/test_routes_api.py` y `test_attention_api.py` usan casos de uso falsos y cubren respuestas completas, `found=false`, trazas opcionales, errores 404/422/503, validación sin reflejar la entrada y roles 401/403. Las pruebas existentes de cobertura y gateway verifican `INVALID_WEIGHT` y red incoherente.
+- **Harness de routing** (`docker compose -f docker-compose.test.yml run --rm routing-tests`, equivalente a `make test-routing`): `182 passed`, cobertura total **100 %** y **100 %** en los dos endpoints, `errors.py`, `trace.py`, dependencias, cobertura y gateway. Ruff, formato, mypy (59 archivos), Bandit y pip-audit pasan.
+- **Swagger:** tras reconstruir el stack, `/openapi.json` registra `GET /api/v1/routes/cheapest` y `GET /api/v1/attention/best`; los cinco servicios quedaron `Healthy`.
 
 ### F3-D (integración)
 _Pendiente._

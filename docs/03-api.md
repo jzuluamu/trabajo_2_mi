@@ -128,8 +128,8 @@ Responde `204`. Error posible: `EDGE_NOT_FOUND`.
 |---|---|---|
 | `GET /health` | público | ✅ |
 | `GET /api/v1/coverage` | coordinator, operator | ✅ F2 |
-| `GET /api/v1/routes/cheapest` | coordinator, operator | ⏳ F3-C |
-| `GET /api/v1/attention/best` | coordinator, operator | ⏳ F3-C |
+| `GET /api/v1/routes/cheapest` | coordinator, operator | ✅ F3-C |
+| `GET /api/v1/attention/best` | coordinator, operator | ✅ F3-C |
 
 Todos aceptan `trace=true` para incluir la traza paso a paso (`TraceStep`: `step`, `action`, `node`, `data`).
 

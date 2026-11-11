@@ -116,3 +116,31 @@ def test_invalid_weight_is_propagated_as_domain_error() -> None:
 
     with pytest.raises(InvalidWeightError):
         _gateway(_ok(payload)).load_graph()
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "nodes": [{"id": "Z1", "type": "ZONE", "name": "Uno"}],
+            "edges": [
+                {
+                    "id": "E1",
+                    "source": "Z1",
+                    "target": "Z_MISSING",
+                    "weight": 1,
+                    "bidirectional": False,
+                }
+            ],
+        },
+        {
+            "nodes": [
+                {"id": "Z1", "type": "ZONE", "name": "Uno"},
+                {"id": "Z1", "type": "ZONE", "name": "Duplicado"},
+            ],
+            "edges": [],
+        },
+    ],
+)
+def test_incoherent_network_is_unavailable(payload: dict[str, Any]) -> None:
+    _assert_unavailable(_gateway(_ok(payload)))
