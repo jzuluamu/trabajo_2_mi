@@ -5,7 +5,7 @@
 
 ## Alcance actual: Features 1 y 2
 
-El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre una base congelada, más un paso de integración, y después **F2 · Consulta de cobertura (BFS)**. F3 queda **fuera del alcance actual**: su documentación se conserva como diseño de referencia. Detalle de F1 y reparto de archivos en [features/F1-red-cobertura.md](features/F1-red-cobertura.md); detalle de F2 en [features/F2-consulta-cobertura.md](features/F2-consulta-cobertura.md). Prompts para los agentes de F1 en [features/F1-prompts.md](features/F1-prompts.md).
+El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre una base congelada, más un paso de integración, y después **F2 · Consulta de cobertura (BFS)**. Ahora se construye **F3 · Alternativa de menor costo (Dijkstra)** en 4 carriles, uno por integrante: [features/F3-menor-costo.md](features/F3-menor-costo.md) y, para cada persona, [features/F3-sesiones.md](features/F3-sesiones.md). Detalle de F1 y reparto de archivos en [features/F1-red-cobertura.md](features/F1-red-cobertura.md); detalle de F2 en [features/F2-consulta-cobertura.md](features/F2-consulta-cobertura.md). Prompts para los agentes de F1 en [features/F1-prompts.md](features/F1-prompts.md).
 
 ## Estado de F1 (cada carril edita solo su fila)
 
@@ -17,13 +17,23 @@ El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre un
 | F1-C | API REST (esquemas, endpoints, inyección) | _(nombre)_ | ✅ Terminada (con evidencia) | [F1-C](features/F1C-api-rest.md) |
 | F1-D | Integración, interfaz mínima y evidencia (después de A, B y C) | Integrador | ✅ Terminada (con evidencia) | [F1-D](features/F1D-integracion.md) |
 
+## Estado de F3 (cada carril edita solo su fila)
+
+| Carril | Qué construye | Dueño | Estado | Especificación |
+|---|---|---|---|---|
+| Base | Firmas congeladas, `DESTINATION_NOT_FOUND`, `PathResult.legs`, contrato y reparto | Integrador | ✅ Lista | [F3](features/F3-menor-costo.md) |
+| F3-A | `DijkstraPathFinder` y `BreadthFirstPathFinder` | Juan Pablo | ⏳ Pendiente | [Sesión 1](features/F3-sesiones.md#sesión-1--persona-1--f3-a-algoritmos) |
+| F3-B | `FindCheapestRoute` y `FindBestAttention` | Alexander | ⏳ Pendiente | [Sesión 2](features/F3-sesiones.md#sesión-2--persona-2--f3-b-casos-de-uso) |
+| F3-C | `/routes/cheapest`, `/attention/best` y mapeo de errores | Juan Andrés | ⏳ Pendiente | [Sesión 3](features/F3-sesiones.md#sesión-3--persona-3--f3-c-api-rest) |
+| F3-D | Pestaña **Menor costo** en la consola web, humo F3 y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [Sesión 4](features/F3-sesiones.md#sesión-4--integrador--f3-d-consola-humo-y-evidencia) |
+
 ## Estado de features
 
 | # | Feature | Servicio | Estado | Especificación |
 |---|---|---|---|---|
 | F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
 | F2 | Consulta de cobertura (BFS) | `routing-service` | ✅ Terminada (con evidencia) | [F2](features/F2-consulta-cobertura.md) |
-| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ⛔ Fuera del alcance actual | [F3](features/F3-menor-costo.md) |
+| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | 🟡 En construcción | [F3](features/F3-menor-costo.md) |
 | F4 | Consola de operación | `web` (React, ADR 0007) · `console` (Streamlit, en retiro) | 🟡 Consola web con paridad de F1 y F2 y la cobertura resaltada en el mapa; falta F3 | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
@@ -37,7 +47,8 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ✅ Terminada |
 | 2 — F2 · Consulta de cobertura (BFS) | BFS, caso de uso, gateway HTTP, endpoint, pestaña de la consola y humo | ✅ Terminada |
 | F4 · Consola web | SPA React + BFF ([ADR 0007](adr/0007-consola-web-react-bff.md)), conviviendo con Streamlit hasta validar la paridad | 🟡 En progreso |
-| Posterior | F3, F4 completa, aceptación y cambio docente | ⛔ Fuera del alcance actual |
+| 3 — F3 · Menor costo (Dijkstra) en 4 carriles | Base, algoritmos, casos de uso, API, consola y humo | 🟡 En progreso |
+| Posterior | F4 completa, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 
@@ -60,6 +71,7 @@ Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).
 | [adr/](adr/) | Registro de decisiones de arquitectura |
 | [features/](features/) | Especificación, criterios de aceptación y evidencia por feature |
 | [features/F1-prompts.md](features/F1-prompts.md) | Prompts para que cada agente de IA (Claude/Codex) construya su carril |
+| [features/F3-sesiones.md](features/F3-sesiones.md) | F3: qué hace cada integrante, reglas para no crear conflictos y prompts |
 
 ## Decisiones (ADR)
 

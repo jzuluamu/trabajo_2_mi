@@ -86,12 +86,21 @@ Ambas consolas conviven hasta validar la paridad.
 
 **Checkpoint:** `make up && make test`, más el recorrido de la guía [10](10-guia-prueba-manual.md#consola-web-react). Después, un PR aparte retira `services/console` y marca ADR 0005 y 0006 como reemplazados.
 
+## Fase 3 — F3 · Menor costo (Dijkstra) en 4 carriles 🟡
+
+1. **Base** (integrador): firmas congeladas, `DESTINATION_NOT_FOUND`, `PathResult.legs`, contrato y reparto.
+2. **F3-A, F3-B y F3-C en paralelo** (personas 1, 2 y 3), cada uno en su rama y sus archivos.
+3. **F3-D** (integrador), cuando A, B y C estén en `main`: pestaña de la consola web, humo y evidencia.
+
+Detalle: [F3](features/F3-menor-costo.md) y [F3-sesiones](features/F3-sesiones.md).
+
+**Checkpoint:** `make reset && make up && make test && sh scripts/smoke_f3.sh`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F3.
+
 ## Fuera del alcance actual ⛔
 
 Si el alcance se amplía, se retoman en este orden:
-1. F3, menor costo con Dijkstra ([05](05-algoritmos-dijkstra.md));
-2. F4 completa;
-3. la aceptación de los 4 escenarios del brief;
-4. el cambio de requisito docente.
+1. F4 completa;
+2. la aceptación de los 4 escenarios del brief;
+3. el cambio de requisito docente.
 
 Los puntos de extensión siguen preparados: `ReachabilityStrategy` y `PathFinder` en routing-service.

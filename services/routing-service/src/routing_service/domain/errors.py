@@ -26,6 +26,10 @@ class ZoneNotFoundError(DomainError):
     code = "ZONE_NOT_FOUND"
 
 
+class DestinationNotFoundError(DomainError):
+    code = "DESTINATION_NOT_FOUND"
+
+
 class DuplicateNodeError(DomainError):
     code = "DUPLICATE_ID"
 
