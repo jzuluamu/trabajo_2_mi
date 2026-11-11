@@ -5,19 +5,27 @@
 
 /*
  * Tokens del sistema visual (docs/features/F4-consola.md §Sistema visual).
- * Interfaz neutra en blanco y grises: el color se reserva para lo que comunica algo
- * (selección y cobertura en azul, avisos en ámbar, errores en rojo, éxito en verde).
+ * Interfaz sobria con identidad propia: el azul noche (`ink`) da estructura al encabezado
+ * y al panel de marca, y el color de marca (`brand`, petróleo) solo marca la navegación y la
+ * acción principal. El mapa conserva sus colores con significado (selección y cobertura en
+ * azul, avisos en ámbar, errores en rojo, éxito en verde); la marca nunca aparece en él.
  */
 :root {
   --radius: 0.75rem;
-  --background: #fafafa;
+  --background: #f3f5f8;
   --foreground: #171717;
   --card: #ffffff;
   --card-foreground: #171717;
   --popover: #ffffff;
   --popover-foreground: #171717;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
+  --primary: #0b7285;
+  --primary-foreground: #ffffff;
+  --brand: #0b7285;
+  --brand-foreground: #ffffff;
+  --brand-soft: #e3f1f3;
+  --ink: #0b1f33;
+  --ink-foreground: #ffffff;
+  --ink-muted: #a9bcd0;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
   --muted: #f4f4f5;
@@ -44,8 +52,14 @@
   --card-foreground: #fafafa;
   --popover: #1a1a1a;
   --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
+  --primary: #4fc3d1;
+  --primary-foreground: #04131f;
+  --brand: #4fc3d1;
+  --brand-foreground: #04131f;
+  --brand-soft: #0f2a30;
+  --ink: #0e1a28;
+  --ink-foreground: #f1f5f9;
+  --ink-muted: #94a9c0;
   --secondary: #222222;
   --secondary-foreground: #fafafa;
   --muted: #1f1f1f;
@@ -80,6 +94,12 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);

@@ -14,7 +14,10 @@ export function SectionHeader({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="space-y-1">
-        <h2 id={id} className="text-xl font-semibold tracking-tight text-balance">
+        <h2
+          id={id}
+          className="text-2xl font-bold tracking-tight text-balance text-ink dark:text-foreground"
+        >
           {title}
         </h2>
         <p className="max-w-prose text-sm text-pretty text-muted-foreground">{description}</p>

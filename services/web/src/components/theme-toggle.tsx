@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme, type ThemePreference } from "@/hooks/use-theme";
+import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "Claro", icon: Sun },
@@ -17,13 +18,18 @@ const OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
   { value: "system", label: "Según el sistema", icon: Monitor },
 ];
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { preference, resolved, setPreference } = useTheme();
   const Current = resolved === "dark" ? Moon : Sun;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-11 sm:size-9" aria-label="Cambiar tema">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("size-11 sm:size-9", className)}
+          aria-label="Cambiar tema"
+        >
           <Current />
         </Button>
       </DropdownMenuTrigger>

@@ -13,11 +13,11 @@ const SENSE: Record<NodeLink["arrow"], { icon: typeof ArrowRight; text: string }
 
 export function NodeCard({ card }: { card: NodeCardData }) {
   return (
-    <Card className="gap-4" aria-live="polite">
+    <Card className="gap-4 border-t-4 border-t-brand" aria-live="polite">
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2 text-base">
           <h3>{card.name}</h3>
-          <Badge variant="secondary">{card.typeLabel}</Badge>
+          <Badge variant="brand">{card.typeLabel}</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Identificador <span className="font-mono">{card.id}</span>
