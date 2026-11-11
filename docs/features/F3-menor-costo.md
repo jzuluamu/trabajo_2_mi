@@ -87,7 +87,16 @@ Decisiones:
 ## Evidencia
 
 ### F3-A
-_Pendiente._
+Verificado el 2026-11-11 sobre `feature/F3A-algoritmos`.
+
+- **Código:** `domain/cheapest_path/dijkstra.py` (`DijkstraPathFinder`: `heapq` con `(costo, node_id)`, borrado perezoso, salida temprana, `pred` con el `Arc` y `validate_weight` en cada arco) y `fewest_hops.py` (`BreadthFirstPathFinder`: BFS con `pred` que para al descubrir el destino). Ambos comparten `reconstruct_legs`.
+- **Pruebas:** `tests/unit/domain/cheapest_path/test_dijkstra.py` y `test_fewest_hops.py`. Cubren la checklist de [05](../05-algoritmos-dijkstra.md#casos-que-deben-probarse-f3) en el dominio, la traza exacta de 10 pasos de B_NORTE → Z_CENTRO, una entrada `stale` (B_NORTE → Z_DELICIAS: `(30, Z_CENTRO)` en el paso 5), el desempate por `id` y los costos desde cada base de los 4 ejemplos de `/attention/best`.
+- **Resultados con la red demo:** B_NORTE → Z_CENTRO = 15 min en 3 tramos (E02, E03, E04); el de menos tramos es el directo E01, de 30 min. B_SUR → Z_ESTACION = 15 min; el sentido inverso no tiene ruta. B_NORTE → Z_FUENTE: `found=false`.
+- **Harness (`make test-routing`):** 128 pruebas, cobertura total 99,70 %, y **100 %** en `dijkstra.py` y `fewest_hops.py`. `tests/unit/test_f3_interfaces.py` sigue verde sin cambios.
+- **Decisiones dentro de la especificación:**
+  - `skip` lleva `from`, como dice la Sesión 1; la tabla de [05](../05-algoritmos-dijkstra.md#traza-b_norte--z_centro) lo abrevia.
+  - Con `found=false` y `trace=True` se conserva la traza, que `/attention/best` necesita para concatenar la de cada candidata.
+  - `skip` se emite también para vecinos ya fijados, como B_NORTE en el paso 2.
 
 ### F3-B
 _Pendiente._
