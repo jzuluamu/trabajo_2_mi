@@ -106,12 +106,12 @@ Ejemplos con la red demo:
 
 ## Casos que deben probarse (F3)
 
-- [ ] Ruta posible con camino y costo exactos (B_NORTE → Z_CENTRO = 15).
-- [ ] Contraejemplo de tramos frente a costo: `fewest_hops.hops < hops` y `fewest_hops.cost > total_cost`.
-- [ ] Ruta imposible por red desconectada (B_NORTE → Z_FUENTE): `found=false`, sin error.
-- [ ] Arista de un solo sentido: hay ruta de B_SUR a Z_ESTACION, pero no en sentido inverso.
-- [ ] Peso inválido (0, negativo, `inf`, `nan`) inyectado en un `Graph` de prueba: `InvalidWeightError` o `INVALID_WEIGHT`.
-- [ ] Origen o destino inexistente: `ORIGIN_NOT_FOUND` / `DESTINATION_NOT_FOUND`.
-- [ ] Origen igual a destino: camino `[origen]`, costo 0.
-- [ ] La traza coincide con la tabla de este documento.
-- [ ] `/attention/best`: los cuatro ejemplos de la tabla anterior.
+- [x] Ruta posible con camino y costo exactos (B_NORTE → Z_CENTRO = 15).
+- [x] Contraejemplo de tramos frente a costo: `fewest_hops.hops < hops` y `fewest_hops.cost > total_cost`.
+- [x] Ruta imposible por red desconectada (B_NORTE → Z_FUENTE): `found=false`, sin error.
+- [x] Arista de un solo sentido: hay ruta de B_SUR a Z_ESTACION, pero no en sentido inverso.
+- [x] Peso inválido (0, negativo, `inf`, `nan`) inyectado en un `Graph` de prueba: `InvalidWeightError` o `INVALID_WEIGHT`.
+- [ ] Origen o destino inexistente: `ORIGIN_NOT_FOUND` / `DESTINATION_NOT_FOUND`. (F3-A ✔ en el dominio: `NodeNotFoundError`; los códigos los asigna F3-B)
+- [x] Origen igual a destino: camino `[origen]`, costo 0.
+- [x] La traza coincide con la tabla de este documento.
+- [ ] `/attention/best`: los cuatro ejemplos de la tabla anterior. (F3-A ✔ los costos desde cada base; la elección de la base la prueba F3-B)
