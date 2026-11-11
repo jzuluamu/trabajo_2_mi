@@ -11,8 +11,17 @@ const SERVICE_LABELS: Record<string, string> = {
 };
 const SERVICES = Object.keys(SERVICE_LABELS);
 
-/** Estado del sistema (`/health`, público). Icono + texto: no depende solo del color. */
-export function ServiceStatus({ className }: { className?: string }) {
+/**
+ * Estado del sistema (`/health`, público). Icono + texto: no depende solo del color.
+ * `onDark` lo adapta al encabezado en azul noche.
+ */
+export function ServiceStatus({
+  className,
+  onDark = false,
+}: {
+  className?: string;
+  onDark?: boolean;
+}) {
   const health = useHealth();
   if (health.isPending) {
     return (
@@ -36,15 +45,30 @@ export function ServiceStatus({ className }: { className?: string }) {
       className={cn("flex flex-wrap gap-2", className)}
     >
       {down.length === 0 ? (
-        <li className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
-          <CircleCheck className="size-3.5 text-success" aria-hidden />
+        <li
+          className={cn(
+            "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs",
+            onDark
+              ? "border-green-300/35 bg-green-400/10 text-green-200"
+              : "bg-card text-muted-foreground",
+          )}
+        >
+          <CircleCheck
+            className={cn("size-3.5", onDark ? "text-green-300" : "text-success")}
+            aria-hidden
+          />
           Todo en línea
         </li>
       ) : (
         down.map((service) => (
           <li
             key={service.name}
-            className="flex items-center gap-1.5 rounded-full border border-destructive/30 bg-card px-3 py-1 text-xs text-destructive"
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs",
+              onDark
+                ? "border-red-300/40 bg-red-400/15 text-red-200"
+                : "border-destructive/30 bg-card text-destructive",
+            )}
           >
             <CircleX className="size-3.5" aria-hidden />
             {SERVICE_LABELS[service.name] ?? service.name}: sin conexión

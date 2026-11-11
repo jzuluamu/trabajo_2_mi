@@ -23,15 +23,29 @@ export function LoginScreen() {
   };
 
   return (
-    <div className="relative grid min-h-dvh place-items-center px-4 py-10">
-      <div className="absolute top-3 right-3">
-        <ThemeToggle />
-      </div>
-      <main className="w-full max-w-sm space-y-6">
-        <Brand />
-        <Card>
+    <div className="flex min-h-dvh flex-col lg:flex-row">
+      <aside className="flex flex-col gap-10 bg-ink px-6 py-5 text-ink-foreground lg:w-[46%] lg:justify-between lg:px-14 lg:py-12">
+        <Brand inverted />
+        <NetworkArt className="hidden w-full max-w-lg lg:block" />
+        <div className="hidden max-w-md space-y-3 lg:block">
+          <p className="text-3xl leading-tight font-bold tracking-tight text-balance">
+            La red de atención, clara en un vistazo.
+          </p>
+          <p className="text-base text-pretty text-ink-muted">
+            Consulte qué zonas cubre cada base y cuál es la ruta de menor tiempo para enviar a un
+            técnico.
+          </p>
+        </div>
+      </aside>
+      <main className="relative flex flex-1 flex-col items-center justify-center gap-5 px-4 py-10">
+        <div className="absolute top-3 right-3">
+          <ThemeToggle />
+        </div>
+        <Card className="w-full max-w-sm">
           <CardHeader>
-            <h1 className="text-xl font-semibold tracking-tight">Bienvenido</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-ink dark:text-foreground">
+              Bienvenido
+            </h1>
             <CardDescription className="text-pretty">
               Ingrese su clave de acceso para consultar y administrar la red de atención.
             </CardDescription>
@@ -51,7 +65,7 @@ export function LoginScreen() {
                     autoComplete="off"
                     spellCheck={false}
                     autoFocus
-                    className="h-11 pr-11 pl-9 font-mono sm:h-9"
+                    className="h-11 pr-11 pl-9 font-mono"
                     value={apiKey}
                     onChange={(event) => {
                       setApiKey(event.target.value);
@@ -63,7 +77,7 @@ export function LoginScreen() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute top-0 right-0 size-11 sm:size-9"
+                    className="absolute top-0 right-0 size-11"
                     aria-label={visible ? "Ocultar la clave" : "Mostrar la clave"}
                     aria-pressed={visible}
                     onClick={() => {
@@ -77,7 +91,7 @@ export function LoginScreen() {
               </div>
               <Button
                 type="submit"
-                className="h-11 w-full sm:h-9"
+                className="h-11 w-full text-base"
                 disabled={login.isPending || !apiKey.trim()}
               >
                 {login.isPending && <Loader2 className="animate-spin" aria-hidden />}
@@ -94,5 +108,38 @@ export function LoginScreen() {
         <ServiceStatus />
       </main>
     </div>
+  );
+}
+
+/** Ilustración decorativa: la red con una ruta resaltada en el color de marca. */
+function NetworkArt({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 520 300" className={className} aria-hidden>
+      <g className="stroke-[#2b4767]" strokeWidth="2" fill="none">
+        <path d="M70 90 L190 60 L290 120 L250 210 L120 220 Z" />
+        <path d="M290 120 L410 80 L460 190 L350 250 L250 210" />
+        <path d="M190 60 L250 210" />
+      </g>
+      <path
+        d="M70 90 L190 60 L290 120 L410 80"
+        className="stroke-brand"
+        strokeWidth="3.5"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <g className="fill-ink stroke-[#7f95ae]" strokeWidth="2">
+        <circle cx="120" cy="220" r="9" />
+        <circle cx="250" cy="210" r="9" />
+        <circle cx="460" cy="190" r="9" />
+        <circle cx="350" cy="250" r="9" />
+      </g>
+      <g className="fill-ink-foreground stroke-brand" strokeWidth="3">
+        <circle cx="190" cy="60" r="9" />
+        <circle cx="290" cy="120" r="9" />
+        <circle cx="410" cy="80" r="11" />
+      </g>
+      <rect x="57" y="77" width="26" height="26" rx="6" className="fill-brand" />
+    </svg>
   );
 }

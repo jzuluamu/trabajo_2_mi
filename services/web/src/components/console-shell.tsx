@@ -15,6 +15,15 @@ import { useNetwork } from "@/hooks/use-network";
 import { ROLE_LABELS, useLogout } from "@/hooks/use-session";
 import { describeError } from "@/lib/network-format";
 import type { Role } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+/** Botones fantasma sobre el encabezado en azul noche. */
+const ON_INK =
+  "text-ink-foreground hover:bg-white/10 hover:text-ink-foreground dark:hover:bg-white/10";
+
+/** Pestañas como barra de navegación: subrayado con el color de marca en la activa. */
+const TAB_TRIGGER =
+  "h-12 flex-none rounded-none px-4 text-[0.9375rem] data-[state=active]:font-semibold after:bg-brand group-data-[orientation=horizontal]/tabs:after:bottom-0 group-data-[orientation=horizontal]/tabs:after:h-[3px]";
 
 const OPERATOR_TABS = ["red", "cobertura"] as const;
 const COORDINATOR_TABS = ["red", "cobertura", "configurar"] as const;
@@ -28,19 +37,19 @@ export function ConsoleShell({ role }: { role: Role }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b bg-card/90 backdrop-blur">
+      <header className="sticky top-0 z-30 bg-ink text-ink-foreground shadow-sm">
         <div className="mx-auto flex h-16 w-full max-w-screen-2xl items-center gap-3 px-4 sm:px-6 lg:px-8">
-          <Brand />
-          <ServiceStatus className="ml-auto hidden md:flex" />
+          <Brand inverted />
+          <ServiceStatus onDark className="ml-auto hidden md:flex" />
           <div className="ml-auto flex items-center gap-1 md:ml-2">
-            <Badge variant="secondary" className="hidden sm:inline-flex">
+            <Badge className="hidden bg-white/10 text-ink-foreground sm:inline-flex">
               {ROLE_LABELS[role]}
             </Badge>
-            <ThemeToggle />
+            <ThemeToggle className={ON_INK} />
             <Button
               variant="ghost"
               size="sm"
-              className="h-11 sm:h-9"
+              className={cn("h-11 sm:h-9 sm:border sm:border-white/20", ON_INK)}
               onClick={() => {
                 logout.mutate();
               }}
@@ -62,17 +71,20 @@ export function ConsoleShell({ role }: { role: Role }) {
           <ServiceStatus />
         </div>
         <Tabs value={tab} onValueChange={setTab} className="gap-6">
-          <TabsList className="w-full justify-start overflow-x-auto group-data-[orientation=horizontal]/tabs:h-auto sm:w-fit">
-            <TabsTrigger value="red" className="h-9 px-3">
+          <TabsList
+            variant="line"
+            className="w-full justify-start overflow-x-auto rounded-none border-b p-0 group-data-[orientation=horizontal]/tabs:h-auto"
+          >
+            <TabsTrigger value="red" className={TAB_TRIGGER}>
               <MapIcon aria-hidden />
               Red
             </TabsTrigger>
-            <TabsTrigger value="cobertura" className="h-9 px-3">
+            <TabsTrigger value="cobertura" className={TAB_TRIGGER}>
               <Radar aria-hidden />
               Cobertura
             </TabsTrigger>
             {isCoordinator && (
-              <TabsTrigger value="configurar" className="h-9 px-3">
+              <TabsTrigger value="configurar" className={TAB_TRIGGER}>
                 <Settings2 aria-hidden />
                 Configurar red
               </TabsTrigger>

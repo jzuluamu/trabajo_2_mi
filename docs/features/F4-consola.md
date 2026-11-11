@@ -39,6 +39,7 @@ SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), Tan
   - **Cargar archivo:** área para soltar o elegir el `.json` y elección "Reemplazar todo" / "Agregar";
   - los avisos de éxito usan nombres ("Listo: se conectó Base Norte con Isla (12 min).").
   - Los errores se muestran con el `message` del contrato y, en una importación, con su ubicación en el archivo.
+- [x] **Identidad visual** (2026-11-11, propuesta aprobada en Claude Design): logotipo propio (pin con tres nodos conectados), encabezado en azul noche, color de marca petróleo en las pestañas y la acción principal, indicadores con icono, ficha con borde de marca e inicio de sesión con panel de marca. El mapa no cambia de colores.
 - [x] **Tema claro y oscuro** (claro, oscuro o según el sistema; se recuerda) con tokens semánticos. El mapa usa su paleta por tema.
 - [x] **Diseño móvil** (375 px sin desplazamiento horizontal) y áreas táctiles de 44 px en móvil.
 - [x] **Estados** de carga (esqueletos), vacío (con la siguiente acción), error (con "Reintentar") y éxito (toasts).
@@ -106,17 +107,22 @@ Variables del contenedor (las fija `docker-compose.yml`; no van en `.env`):
 
 ## Sistema visual
 
-### Consola web: neutra en blanco y grises (2026-10-28)
+### Consola web: identidad sobria (2026-11-11; antes, neutra en grises desde 2026-10-28)
 
-La interfaz es neutra y **el color solo aparece cuando comunica algo**: selección y cobertura en azul, vista previa y avisos en ámbar, errores en rojo y éxito en verde. Así el resultado de una consulta resalta sin competir con el resto de la pantalla.
+La interfaz sigue siendo sobria y **en el mapa el color solo aparece cuando comunica algo**: selección y cobertura en azul, vista previa y avisos en ámbar, errores en rojo y éxito en verde. Sobre esa base se agrega una identidad propia que nunca entra al mapa:
+- **azul noche** (`ink`) para la estructura: encabezado, logotipo y panel de marca del inicio de sesión;
+- **color de marca petróleo** (`brand`) solo para la navegación (pestaña activa) y la acción principal (botón primario), más un tono suave para iconos de indicadores y la etiqueta de tipo;
+- **logotipo**: un pin de ubicación con tres nodos conectados; el nodo de color es la base de origen (`components/brand.tsx`).
 
-Los tokens viven en `services/web/src/index.css` (`:root` y `.dark`) y la paleta del mapa en `services/web/src/lib/graph-elements.ts` (`LIGHT_PALETTE` y `DARK_PALETTE`).
+Los tokens viven en `services/web/src/index.css` (`:root` y `.dark`) y la paleta del mapa en `services/web/src/lib/graph-elements.ts` (`LIGHT_PALETTE` y `DARK_PALETTE`), que no cambia.
 
 | Rol | Claro | Oscuro | Uso |
 |---|---|---|---|
-| Fondo / superficie | `#FAFAFA` / `#FFFFFF` | `#0A0A0A` / `#141414` | Página y tarjetas |
+| Fondo / superficie | `#F3F5F8` / `#FFFFFF` | `#0A0A0A` / `#141414` | Página y tarjetas |
+| Azul noche (`ink`) | `#0B1F33`, texto `#FFFFFF` / `#A9BCD0` | `#0E1A28`, texto `#F1F5F9` / `#94A9C0` | Encabezado, logotipo, panel de marca |
+| Marca (`brand`) / suave | `#0B7285` / `#E3F1F3` | `#4FC3D1` / `#0F2A30` | Pestaña activa, botón primario, iconos de indicadores |
 | Texto / secundario | `#171717` / `#646464` | `#FAFAFA` / `#A3A3A3` | Texto (contraste AA sobre el fondo) |
-| Primario | `#18181B` | `#FAFAFA` | Botón de la acción principal |
+| Primario | `#0B7285` (= marca), texto blanco | `#4FC3D1`, texto `#04131F` | Botón de la acción principal |
 | Bordes | `#E5E5E5` | `#2A2A2A` | Tarjetas, tablas y campos |
 | Base con / sin técnico libre | `#262626` / `#A3A3A3` | `#E5E5E5` / `#5C5C5C` | Cuadrados del mapa |
 | Zona | blanco con borde `#8A8A8A` | `#141414` con borde `#8A8A8A` | Círculos del mapa |
@@ -178,15 +184,19 @@ Consola visual (2026-10-07):
 |---|---|
 | ![Mapa](evidencia/F4/mapa-red-seleccion.jpg) | ![Vista previa](evidencia/F4/mapa-vista-previa-invalida.jpg) |
 
-Consola web (2026-10-28, Chromium vía Playwright, red demo):
+Consola web con la identidad visual (2026-11-11, Chrome headless, red demo). Las capturas de configuración son del 2026-10-28, antes del cambio de identidad:
 
-| Inicio de sesión | Red: mapa completo y detalle de Base Norte | Cobertura desde Base Norte, zona Fuente |
+| Inicio de sesión | Red: mapa completo y detalle de Base Norte | Cobertura desde Base Norte |
 |---|---|---|
 | ![Inicio](evidencia/F4/web-login.jpg) | ![Red](evidencia/F4/web-red.jpg) | ![Cobertura](evidencia/F4/web-cobertura.jpg) |
 
 | Nueva conexión con peso `-5`: vista previa "revisar" | Nueva base con técnicos e id sugerido | Tema oscuro | Móvil (375 px) |
 |---|---|---|---|
 | ![Conexión](evidencia/F4/web-configurar-invalido.jpg) | ![Nueva base](evidencia/F4/web-nueva-base.jpg) | ![Oscuro](evidencia/F4/web-red-oscuro.jpg) | ![Móvil](evidencia/F4/web-movil.jpg) |
+
+| Inicio de sesión en móvil (390 px) |
+|---|
+| ![Inicio móvil](evidencia/F4/web-login-movil.jpg) |
 
 En el navegador no hubo errores de JavaScript ni violaciones de CSP.
 
