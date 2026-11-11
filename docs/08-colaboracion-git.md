@@ -15,6 +15,17 @@ Asigne los nombres reales en `docs/README.md` y los usuarios de GitHub en `.gith
 
 **Documentación compartida:** cada carril edita solo **su fila** de la tabla de estado de `docs/README.md` y su archivo `docs/features/F1X-*.md`. Es la única fuente probable de conflictos de merge, y se resuelve conservando las filas de todos.
 
+## Reparto de F3: 4 personas
+
+| Persona | Carril | Rama | Archivos propios |
+|---|---|---|---|
+| Persona 1 | F3-A Algoritmos | `feature/F3A-algoritmos` | `domain/cheapest_path/` y sus pruebas |
+| Persona 2 | F3-B Casos de uso | `feature/F3B-casos-de-uso` | `application/{routes,attention}.py` y sus pruebas |
+| Persona 3 | F3-C API REST | `feature/F3C-api-rest` | `api/`, `main.py`, `infrastructure/network_gateway.py` y sus pruebas |
+| Integrador | Base y F3-D | `feature/F3-base`, `feature/F3D-consola-humo` | Consola web (`services/web`), `scripts/smoke_f3.sh` y cierre de la documentación |
+
+Detalle y reglas para no crear conflictos: [features/F3-sesiones.md](features/F3-sesiones.md).
+
 ## Ramas
 
 - `main` está protegida: solo recibe merges por PR, con la CI en verde y 1 aprobación.

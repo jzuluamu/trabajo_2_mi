@@ -128,10 +128,15 @@ Responde `204`. Error posible: `EDGE_NOT_FOUND`.
 |---|---|---|
 | `GET /health` | público | ✅ |
 | `GET /api/v1/coverage` | coordinator, operator | ✅ F2 |
-| `GET /api/v1/routes/cheapest` | coordinator, operator | ⏳ F3 |
-| `GET /api/v1/attention/best` | coordinator, operator | ⏳ F3 |
+| `GET /api/v1/routes/cheapest` | coordinator, operator | ⏳ F3-C |
+| `GET /api/v1/attention/best` | coordinator, operator | ⏳ F3-C |
 
 Todos aceptan `trace=true` para incluir la traza paso a paso (`TraceStep`: `step`, `action`, `node`, `data`).
+
+Reglas comunes a los tres endpoints (F3):
+- Los parámetros de id siguen `^[A-Z0-9_-]{1,32}$`; si no, `VALIDATION_ERROR` sin reflejar el valor.
+- Si la red que entrega network-service trae un peso inválido, la respuesta es `422 INVALID_WEIGHT` (defensa en profundidad).
+- Si la red es incoherente (una conexión hacia un nodo que no existe o un id repetido) o no se puede leer, la respuesta es `503 NETWORK_UNAVAILABLE`, sin detalles internos.
 
 ### `GET /api/v1/coverage?base=B_NORTE[&zone=Z_CENTRO][&trace=true]` — F2
 
@@ -155,6 +160,7 @@ Todos aceptan `trace=true` para incluir la traza paso a paso (`TraceStep`: `step
   - `ORIGIN_NOT_FOUND`: la base no existe.
   - `INVALID_ORIGIN`: el origen no es una base.
   - `ZONE_NOT_FOUND`: la zona no existe.
+  - `INVALID_WEIGHT` (`422`): la red trae un peso inválido (regla común, F3).
   - `NETWORK_UNAVAILABLE`: no se pudo obtener la red.
 
 ### `GET /api/v1/routes/cheapest?origin=B_NORTE&destination=Z_CENTRO[&trace=true]` — F3
@@ -173,9 +179,17 @@ Respuesta cuando existe camino:
 }
 ```
 
+- `origin` y `destination` pueden ser cualquier nodo (base o zona). Si son el mismo nodo, `path=[origin]`, `total_cost=0`, `hops=0` y `legs=[]`.
+- `legs[i]` es la conexión recorrida de `path[i]` a `path[i+1]`. Una conexión bidireccional recorrida al revés aparece con `from`/`to` en el sentido del viaje.
+- `fewest_hops` es el camino de menos tramos (BFS) y su costo. Si hay varios con el mismo número de tramos, se elige el primero en orden de `id` de los vecinos. Cuando coincide con `path`, el `message` lo dice ("coincide con el camino de menos tramos").
 - Cuando no existe camino, la respuesta es `found=false`, `path=[]`, `total_cost=null`, `hops=null`, `legs=[]` y `fewest_hops=null`, con un `message` legible.
+- Con `trace=true`, `trace` es la traza de Dijkstra (ver la tabla de [05](05-algoritmos-dijkstra.md#traza-b_norte--z_centro)). `action` es:
+  - `pop`: el nodo sale del heap y queda fijado (`data.cost`); cada `pop` abre un `step`;
+  - `relax`: mejora el costo de un vecino (`data.cost`, `from`, `edge_id` y, si ya tenía costo, `previous`);
+  - `skip`: el vecino no mejora (`data.cost` candidato, `best` vigente, `from`);
+  - `stale`: entrada obsoleta del heap que se descarta (`data.cost`).
 - Errores posibles:
-  - `ORIGIN_NOT_FOUND` y `DESTINATION_NOT_FOUND`.
+  - `ORIGIN_NOT_FOUND` (se revisa primero) y `DESTINATION_NOT_FOUND`, ambos `404`.
   - `INVALID_WEIGHT`: defensa en profundidad, si la red trae un peso inválido.
   - `NETWORK_UNAVAILABLE`.
 
@@ -194,8 +208,10 @@ Elige, entre las bases con **al menos un técnico disponible**, la de menor cost
 }
 ```
 
-- `alternatives` lista las demás bases con técnico disponible que alcanzan la zona, ordenadas por costo.
+- `best.technicians` lista solo los técnicos **disponibles** de la base elegida.
+- `alternatives` lista las demás bases con técnico disponible que alcanzan la zona. El orden, también para elegir `best`, es: menor `total_cost`, luego menos `hops`, luego `id` de la base.
+- Con `trace=true`, `trace` concatena la traza de Dijkstra desde cada base candidata, en orden de `id`; cada paso lleva además `data.base`.
 - Si ninguna base con técnico disponible alcanza la zona, la respuesta es `found=false`, `best=null` y un `message` que distingue dos casos:
   - "inalcanzable desde toda base";
   - "solo alcanzable desde bases sin técnicos disponibles".
-- Errores posibles: `ZONE_NOT_FOUND` y `NETWORK_UNAVAILABLE`.
+- Errores posibles: `ZONE_NOT_FOUND` (también si el id es de una base) y `NETWORK_UNAVAILABLE`.

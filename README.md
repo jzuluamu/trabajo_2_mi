@@ -32,13 +32,14 @@ Es un trabajo académico de *Matemáticas para Informática*. Además de funcion
 |---|---|---|---|
 | F1 | [Red de cobertura](docs/features/F1-red-cobertura.md) | `network-service` | ✅ Terminada (con evidencia) |
 | F2 | [Consulta de cobertura (BFS)](docs/features/F2-consulta-cobertura.md) | `routing-service` | ✅ Terminada (con evidencia) |
-| F3 | [Alternativa de menor costo (Dijkstra)](docs/features/F3-menor-costo.md) | `routing-service` | ⛔ Fuera del alcance actual |
+| F3 | [Alternativa de menor costo (Dijkstra)](docs/features/F3-menor-costo.md) | `routing-service` | 🟡 En construcción (4 carriles) |
 | F4 | [Consola de operación](docs/features/F4-consola.md) | `web` · `console` (en retiro) | 🟡 Consola web (React) con paridad de F1 y F2 |
 
-> **Alcance actual: F1 y F2.** F1 se construyó en paralelo por 3 personas o agentes (ver
+> **Alcance actual: F1, F2 y F3 (en construcción).** F1 se construyó en paralelo por 3 personas o agentes (ver
 > [docs/features/F1-red-cobertura.md](docs/features/F1-red-cobertura.md)); F2 le agrega la consulta
 > de cobertura con BFS ([docs/features/F2-consulta-cobertura.md](docs/features/F2-consulta-cobertura.md)).
-> F3 queda fuera del alcance actual.
+> F3 (menor costo con Dijkstra) se construye en 4 carriles, uno por integrante
+> ([docs/features/F3-menor-costo.md](docs/features/F3-menor-costo.md)).
 
 El estado vigente de cada feature y de las fases está en **[docs/README.md](docs/README.md)**.
 

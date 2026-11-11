@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from routing_service.domain.graph import Arc
+
 
 @dataclass(frozen=True)
 class TraceStep:
@@ -28,7 +30,10 @@ class ReachabilityResult:
 
 @dataclass(frozen=True)
 class PathResult:
-    """Camino de menor costo; `found=False` cuando el destino no es alcanzable."""
+    """Camino hallado por un `PathFinder`; `found=False` cuando el destino no es alcanzable.
+
+    `legs` son los arcos recorridos en orden (`legs[i]` va de `path[i]` a `path[i + 1]`).
+    """
 
     origin: str
     destination: str
@@ -36,6 +41,7 @@ class PathResult:
     path: tuple[str, ...] = ()
     total_cost: float | None = None
     trace: tuple[TraceStep, ...] = ()
+    legs: tuple[Arc, ...] = ()
 
     @property
     def hops(self) -> int | None:

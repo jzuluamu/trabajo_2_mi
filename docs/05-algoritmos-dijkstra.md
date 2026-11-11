@@ -66,6 +66,27 @@ BFS, por número de tramos, elegiría el camino directo. Dijkstra elige el de 15
 El camino se reconstruye con `pred`: Z_CENTRO ← Z_BOSQUE ← Z_ALAMEDA ← B_NORTE. Costo total: **15**.
 La entrada `(30, Z_CENTRO)` queda obsoleta en el heap y nunca se procesa.
 
+En la traza que devuelve la API (`trace=true`), cada fila de la tabla es un `step`. Cada "Pop" es un `TraceStep` con `action="pop"`; cada relajación que mejora, uno con `action="relax"` (con `from`, `edge_id` y, si el nodo ya tenía costo, `previous`); y cada vecino que no mejora, uno con `action="skip"`. Con este ejemplo son **10 entradas**:
+
+| step | action | node | data |
+|---|---|---|---|
+| 1 | pop | B_NORTE | `cost 0` |
+| 1 | relax | Z_ALAMEDA | `cost 5, from B_NORTE, edge_id E02` |
+| 1 | relax | Z_CENTRO | `cost 30, from B_NORTE, edge_id E01` |
+| 2 | pop | Z_ALAMEDA | `cost 5` |
+| 2 | skip | B_NORTE | `cost 10, best 0` |
+| 2 | relax | Z_BOSQUE | `cost 10, from Z_ALAMEDA, edge_id E03` |
+| 3 | pop | Z_BOSQUE | `cost 10` |
+| 3 | skip | Z_ALAMEDA | `cost 15, best 5` |
+| 3 | relax | Z_CENTRO | `cost 15, from Z_BOSQUE, edge_id E04, previous 30` |
+| 4 | pop | Z_CENTRO | `cost 15` (destino: se detiene) |
+
+Si una entrada obsoleta del heap llega a sacarse antes de terminar, aparece como `action="stale"` en el mismo `step` del último nodo fijado.
+
+**Camino de menos tramos (`fewest_hops`):** lo calcula `BreadthFirstPathFinder` (`domain/cheapest_path/fewest_hops.py`), un BFS que guarda `pred` igual que Dijkstra e ignora los pesos. Su costo es la suma de los pesos de ese camino.
+
+**Límite superior de peso:** network-service rechaza pesos > 1440 min, pero Dijkstra solo exige pesos **positivos y finitos**, que es lo que verifica (`validate_weight` de `domain/graph.py`). Un peso grande no rompe el algoritmo.
+
 ## Mejor alternativa de atención (`/attention/best`)
 
 1. Las candidatas son las bases con al menos un técnico `available=true`.
@@ -79,7 +100,7 @@ Ejemplos con la red demo:
 | Zona | Resultado |
 |---|---|
 | `Z_COLINA` | B_SUR, 20 min, gana sobre B_NORTE con 25 |
-| `Z_ESTACION` | B_SUR, 15 min |
+| `Z_ESTACION` | B_SUR, 15 min (B_NORTE queda como alternativa con 44 min) |
 | `Z_FUENTE` | `found=false`: solo la alcanza B_OESTE, que no tiene técnicos disponibles |
 | `Z_ISLA` | `found=false`: inalcanzable desde toda base |
 
