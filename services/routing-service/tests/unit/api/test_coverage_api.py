@@ -172,3 +172,26 @@ def test_default_gateway_is_built_from_settings() -> None:
     gateway = provide_gateway(get_settings())
 
     assert isinstance(gateway, HttpNetworkGateway)
+
+
+def test_invalid_weight_answers_422(operator_headers: dict[str, str]) -> None:
+    from copy import deepcopy
+
+    payload = deepcopy(DEMO_PAYLOAD)
+    payload["edges"][0]["weight"] = -5
+
+    def invalid_weight_gateway() -> NetworkGateway:
+        return HttpNetworkGateway(
+            "http://network-service:8001",
+            "internal",
+            1.0,
+            transport=httpx.MockTransport(lambda _: httpx.Response(200, json=payload)),
+        )
+
+    app = create_app()
+    app.dependency_overrides[provide_gateway] = invalid_weight_gateway
+    with TestClient(app) as client:
+        response = client.get(URL, params={"base": "B_NORTE"}, headers=operator_headers)
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "INVALID_WEIGHT"
