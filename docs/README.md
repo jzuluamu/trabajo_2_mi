@@ -23,7 +23,7 @@ El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre un
 |---|---|---|---|---|
 | Base | Firmas congeladas, `DESTINATION_NOT_FOUND`, `PathResult.legs`, contrato y reparto | Integrador | ✅ Lista | [F3](features/F3-menor-costo.md) |
 | F3-A | `DijkstraPathFinder` y `BreadthFirstPathFinder` | Juan Pablo | ✅ Terminada (con evidencia) | [Sesión 1](features/F3-sesiones.md#sesión-1--persona-1--f3-a-algoritmos) |
-| F3-B | `FindCheapestRoute` y `FindBestAttention` | Alexander | ⏳ Pendiente | [Sesión 2](features/F3-sesiones.md#sesión-2--persona-2--f3-b-casos-de-uso) |
+| F3-B | `FindCheapestRoute` y `FindBestAttention` | Alexander | ✅ Terminada (con evidencia) | [Sesión 2](features/F3-sesiones.md#sesión-2--persona-2--f3-b-casos-de-uso) |
 | F3-C | `/routes/cheapest`, `/attention/best` y mapeo de errores | Juan Andrés | ⏳ Pendiente | [Sesión 3](features/F3-sesiones.md#sesión-3--persona-3--f3-c-api-rest) |
 | F3-D | Pestaña **Menor costo** en la consola web, humo F3 y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [Sesión 4](features/F3-sesiones.md#sesión-4--integrador--f3-d-consola-humo-y-evidencia) |
 

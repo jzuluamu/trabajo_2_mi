@@ -99,7 +99,25 @@ Verificado el 2026-11-11 sobre `feature/F3A-algoritmos`.
   - `skip` se emite también para vecinos ya fijados, como B_NORTE en el paso 2.
 
 ### F3-B
-_Pendiente._
+Verificado el 2026-11-11 sobre `feature/F3B-casos-de-uso`.
+
+- **Código:** `application/routes.py` (`FindCheapestRoute.execute`: valida origen y luego destino, llama al buscador de menor costo, y solo si hay camino al de menos tramos; arma `legs`, `fewest_hops` y los tres mensajes) y `application/attention.py` (`FindBestAttention.execute`: candidatas = bases con técnico disponible, orden `(total_cost, hops, id)`, `best` solo con técnicos disponibles, traza concatenada con `data.base` y los dos mensajes de "no se puede atender"). Las funciones de apoyo son privadas de cada archivo; no se tocaron dataclasses, constructores ni firmas.
+- **Pruebas:** `tests/unit/application/test_routes.py` (14) y `test_attention.py` (16), con *fakes* de `PathFinder` y de `NetworkGateway`: no dependen de `DijkstraPathFinder`. Cubren el orden de errores, los tres mensajes de ruta, "no hay ruta" sin llamar al buscador de menos tramos, la traza solo cuando se pide, el desempate costo → tramos → id, los técnicos no disponibles fuera de `best` y "base pasada como zona" → `ZONE_NOT_FOUND`.
+- **Los 4 ejemplos de `/attention/best`** (resultados del *fake*, que devuelve lo que daría Dijkstra con la red demo):
+
+  | Zona | Resultado | Mensaje |
+  |---|---|---|
+  | `Z_COLINA` | `best` B_SUR (Marta), 20 min, 2 tramos; alternativa B_NORTE 25 min, 4 tramos | `Atender desde B_SUR (Marta): 20 min.` |
+  | `Z_ESTACION` | `best` B_SUR, 15 min, 2 tramos; alternativa B_NORTE 44 min, 6 tramos | `Atender desde B_SUR (Marta): 15 min.` |
+  | `Z_FUENTE` | `found=false`; solo la alcanza B_OESTE, sin técnicos disponibles | `Z_FUENTE no se puede atender: solo es alcanzable desde bases sin técnicos disponibles (B_OESTE).` |
+  | `Z_ISLA` | `found=false`; inalcanzable desde toda base | `Z_ISLA no se puede atender: es inalcanzable desde toda base.` |
+
+- **Harness** (`docker compose -f docker-compose.test.yml run --rm --build <servicio>-tests` por servicio, equivalente a `make test`; en el entorno no había `make`): network 242 passed (99,74 %), **routing 158 passed, cobertura total 100 %** (y **100 %** en `routes.py` y `attention.py`), console 74 passed (99,09 %), web 141 passed. `tests/unit/test_f3_interfaces.py` sigue verde sin cambios.
+- **Decisiones dentro de la especificación:**
+  - "Caminos iguales" se decide comparando `path` del menor costo con el `path` de menos tramos.
+  - Para saber si una zona solo la alcanzan bases sin técnicos, se ejecuta el buscador (sin traza) desde esas bases únicamente cuando ninguna candidata llega; su traza nunca se incluye.
+  - La traza se devuelve también con `found=false` (la de cada candidata), igual que conserva F3-A.
+  - Si un `PathFinder` informa `found=True` sin costo o sin tramos, se lanza `RuntimeError` (viola el contrato del puerto; evita `assert`, que bandit/ruff rechazan en `src`).
 
 ### F3-C
 _Pendiente._
