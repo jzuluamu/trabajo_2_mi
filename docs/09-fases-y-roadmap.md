@@ -74,7 +74,7 @@ Especificación y evidencia: [F2](features/F2-consulta-cobertura.md).
 
 **Checkpoint:** `make reset && make up && make test && make smoke-f2`, más el recorrido manual de la guía [10](10-guia-prueba-manual.md), sección F2.
 
-## F4 · Consola web (React) 🟡
+## F4 · Consola web (React) y aceptación ✅
 
 Reemplaza la consola Streamlit por una SPA servida por un BFF que guarda la API key ([ADR 0007](adr/0007-consola-web-react-bff.md)):
 - paridad con lo que hace Streamlit en F1 y F2;
@@ -82,9 +82,14 @@ Reemplaza la consola Streamlit por una SPA servida por un BFF que guarda la API 
 - clic en un nodo para abrir su ficha;
 - tema oscuro y diseño móvil.
 
-Ambas consolas conviven hasta validar la paridad.
+Ambas consolas convivieron hasta validar la paridad. Con la pestaña **Menor costo** (F3) la consola web la superó y Streamlit se retiró.
 
-**Checkpoint:** `make up && make test`, más el recorrido de la guía [10](10-guia-prueba-manual.md#consola-web-react). Después, un PR aparte retira `services/console` y marca ADR 0005 y 0006 como reemplazados.
+**Cierre de F4** (`feature/F4-cierre`):
+- se retira `services/console`, con su entrada en compose, el Makefile, la CI y CODEOWNERS; ADR 0005 y 0006 pasan a "Reemplazado por 0007";
+- `make test-acceptance` recorre por la consola web los 4 escenarios del brief: éxito, zona inexistente, red desconectada y peso inválido;
+- hay evidencia por escenario en [F4](features/F4-consola.md#aceptación-de-los-4-escenarios-del-brief).
+
+**Checkpoint:** `make reset && make up && make test && make smoke-f3 && make test-acceptance`, más el recorrido de la guía [10](10-guia-prueba-manual.md#consola-web-react).
 
 ## Fase 3 — F3 · Menor costo (Dijkstra) en 4 carriles ✅
 
@@ -98,9 +103,6 @@ Detalle: [F3](features/F3-menor-costo.md) y [F3-sesiones](features/F3-sesiones.m
 
 ## Fuera del alcance actual ⛔
 
-Si el alcance se amplía, se retoman en este orden:
-1. F4 completa;
-2. la aceptación de los 4 escenarios del brief;
-3. el cambio de requisito docente.
+Queda solo el **cambio de requisito docente**, que se define en clase. Se registra en [F4](features/F4-consola.md#cambio-de-requisito-docente) con su ADR cuando se conozca.
 
 Los puntos de extensión siguen preparados: `ReachabilityStrategy` y `PathFinder` en routing-service.

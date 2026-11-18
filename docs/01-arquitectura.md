@@ -7,8 +7,6 @@ flowchart LR
     U((Coordinador / Operador)) -->|navegador, cookie de sesión| W[web<br/>SPA React + BFF Hono :8080]
     W -->|X-API-Key de la sesión| N[network-service<br/>FastAPI :8001]
     W -->|X-API-Key de la sesión| R[routing-service<br/>FastAPI :8002]
-    C[console<br/>Streamlit :8501<br/>en retiro] -.->|X-API-Key del usuario| N
-    C -.-> R
     R -->|INTERNAL_API_KEY<br/>GET /api/v1/network| N
     N --> DB[(PostgreSQL 16)]
 ```
@@ -18,7 +16,6 @@ flowchart LR
 | `network-service` | Dueño de la red: registra, valida y entrega la red | Con estado | PostgreSQL | F1 |
 | `routing-service` | Calcula la cobertura y el menor costo sobre una copia de la red | Sin estado | Ninguna | F2, F3 |
 | `web` | Interfaz del coordinador y del operador: SPA React servida por un BFF que guarda la API key en la sesión del servidor ([ADR 0007](adr/0007-consola-web-react-bff.md)) | Sesión por usuario (memoria) | Ninguna | F4 |
-| `console` | Consola Streamlit anterior; convive con `web` hasta validar la paridad | Sesión por usuario | Ninguna | F4 |
 | `db` | Almacenamiento | — | Volumen `pgdata` | — |
 
 Redes Docker:
@@ -26,6 +23,8 @@ Redes Docker:
 - `frontend` une los servicios de aplicación.
 
 Los puertos se publican solo en `127.0.0.1`.
+
+La consola Streamlit anterior (`console`, ADR 0005 y 0006) se retiró al cerrar F4: la reemplaza `web` ([ADR 0007](adr/0007-consola-web-react-bff.md)).
 
 ## Por qué esta división
 

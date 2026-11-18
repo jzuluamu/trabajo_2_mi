@@ -23,7 +23,7 @@ Paso a paso para que una **persona** compruebe cada fase. Requisitos: Docker Des
    make up
    ```
 
-5. Compruebe que `db`, `network-service`, `routing-service`, `console` y `web` estén `Up (healthy)`, y que ninguno quede en `Restarting`:
+5. Compruebe que `db`, `network-service`, `routing-service` y `web` estén `Up (healthy)`, y que ninguno quede en `Restarting`:
 
    ```bash
    docker compose ps
@@ -52,7 +52,7 @@ Crea `.env` a partir de `.env.example` y reemplaza cada `CHANGE_ME_*` por un sec
 | `COORDINATOR_API_KEY` | La genera `make env` | Úsela para iniciar sesión como **coordinador** |
 | `OPERATOR_API_KEY` | La genera `make env` | Úsela para iniciar sesión como **operador** |
 | `INTERNAL_API_KEY` | La genera `make env` | Solo entre servicios; la consola la rechaza |
-| `NETWORK_PORT`, `ROUTING_PORT`, `CONSOLE_PORT`, `WEB_PORT` | Solo si el puerto está ocupado | Por defecto 8001, 8002, 8501 y 8080. `WEB_PORT` es nueva (consola web); si su `.env` no la tiene, se usa 8080 |
+| `NETWORK_PORT`, `ROUTING_PORT`, `WEB_PORT` | Solo si el puerto está ocupado | Por defecto 8001, 8002 y 8080. Si su `.env` todavía tiene `CONSOLE_PORT` (consola Streamlit, retirada), puede borrarla: ya no se usa |
 | `LOG_LEVEL` | Opcional | `DEBUG` para más detalle |
 
 Si edita las claves a mano, deben tener al menos 16 caracteres, ser distintas entre sí y no empezar por `CHANGE_ME`. Si no cumplen, el servicio no arranca. Revise el motivo con `make logs`.
@@ -79,7 +79,7 @@ grep API_KEY .env
    make ps
    ```
 
-   Esperado: `db`, `network-service`, `routing-service`, `console` y `web` en estado `healthy`.
+   Esperado: `db`, `network-service`, `routing-service` y `web` en estado `healthy`.
 
 3. **Salud de las APIs:**
 
@@ -111,12 +111,12 @@ grep API_KEY .env
 
 5. **Swagger:** abra <http://localhost:8001/docs> y <http://localhost:8002/docs>.
 
-6. **Consola:** abra <http://localhost:8501>.
-   1. Verá "network-service: operativo" y "routing-service: operativo".
-   2. Pegue una clave incorrecta en la barra lateral: verá el mensaje "API key inválida.".
-   3. Pegue `OPERATOR_API_KEY`: verá "Rol: Operador de atención".
+6. **Consola:** abra <http://localhost:8080>.
+   1. Debajo del formulario verá "Todo en línea".
+   2. Pegue una clave incorrecta: verá "API key inválida." bajo el campo.
+   3. Pegue `OPERATOR_API_KEY` y pulse "Entrar": la cabecera dice "Operador de atención".
    4. Pulse "Cerrar sesión" y repita con `COORDINATOR_API_KEY`.
-   5. Pegue `INTERNAL_API_KEY`: verá que la rechaza como usuario de la consola.
+   5. Pegue `INTERNAL_API_KEY`: verá "Esta clave no corresponde a un usuario de la consola.".
 
 7. **Respuesta ante una caída:**
 
@@ -124,7 +124,7 @@ grep API_KEY .env
    docker compose stop routing-service
    ```
 
-   Recargue la consola: verá "routing-service: no disponible" sin que la aplicación se rompa. Después vuelva a levantarlo:
+   En la cabecera de la consola aparece "Consultas: sin conexión" en menos de 15 s, sin que la aplicación se rompa. Después vuelva a levantarlo:
 
    ```bash
    docker compose start routing-service
@@ -136,7 +136,7 @@ grep API_KEY .env
    make test
    ```
 
-   Esperado: `OK: harness en verde para: network routing console web`.
+   Esperado: `OK: harness en verde para: network routing web`.
 
 9. **Apagar:**
 
@@ -177,21 +177,7 @@ grep API_KEY .env
 
 3. **Swagger:** abra <http://localhost:8001/docs>. Debe listar las 9 rutas de nodos, conexiones y red.
 
-4. **Consola como operador:** abra <http://localhost:8501>, pegue `OPERATOR_API_KEY`, pulse Enter y luego "Ingresar".
-   1. La consola es clara (fondo azul muy pálido). Verá los indicadores: 3 bases (2 con técnico libre), 8 zonas, 9 trayectos (1 de un solo sentido) y 1 zona sin conexión.
-   2. El **mapa** muestra las bases como cuadrados azules (Base Oeste más pálida, "sin técnicos libres"), las zonas como círculos, Isla con borde punteado ("sin conexión"), los minutos en cada trayecto y una flecha en Delicias → Estación.
-   3. Arrastre un nodo: se queda donde lo suelta. Use la rueda o "+"/"−" para el zoom y "Ajustar" para volver a ver todo. Pase el mouse sobre un nodo para ver su resumen.
-   4. Haga clic en Centro: se resaltan sus trayectos y el resto se atenúa. Clic en el fondo: todo vuelve a la normalidad.
-   5. En **Ficha de**, elija Base Norte: verá a Ana "Disponible" y a Luis "No disponible", y sus trayectos. Elija Base Oeste: verá el aviso "Base sin técnicos disponibles…".
-   6. "Ver como tabla (accesible)" muestra las mismas bases, zonas y conexiones en tablas.
-   7. No aparece la pestaña "Configurar red": el operador solo lee.
-
-5. **Consola como coordinador:** cierre sesión y entre con `COORDINATOR_API_KEY`. Abra la pestaña **Configurar red** y use "¿Qué desea hacer?" para elegir la acción.
-   1. *Registrar nodo*: Tipo **Base**, ID `B_ESTE`, Nombre `Base Este`, Técnicos `T10; Sara; sí`. Verá "Nodo 'B_ESTE' registrado." y el nodo en la tabla.
-   2. Repita con el ID `B_ESTE`: verá "Ya existe un nodo con id 'B_ESTE'.".
-   3. *Registrar conexión*: ID `E10`, Desde `B_ESTE`, Hasta `Z_ISLA`, Minutos `-5`. Antes de guardar, el mapa dibuja la conexión punteada en rojo con "revisar". Pulse "Registrar conexión": verá el mensaje de `INVALID_WEIGHT`: "El peso de la conexión 'E10' debe ser mayor que 0 y menor o igual a 1440 minutos.". Cambie a `12`: la vista previa pasa a ámbar con "12 min · vista previa". Registre: verá "Conexión 'E10' registrada." y el trayecto en el mapa.
-   4. *Eliminar*: elija el nodo `B_ESTE` y pulse "Eliminar nodo". Verá que tiene conexiones (`NODE_IN_USE`). Elimine primero la conexión `E10` y después el nodo.
-   5. *Cargar red*: suba `seed/red_demo.json`, deje marcado "Reemplazar la red actual" y pulse "Cargar red". Verá "Red cargada: 11 nodos y 9 conexiones.".
+4. **Consola:** siga los puntos **4 (Red)** y **7 (Configurar red)** de [Consola web (React)](#consola-web-react): como operador se lee la red, y como coordinador se registran bases, zonas y conexiones (incluido el rechazo del peso `-5`) y se carga `seed/red_demo.json`.
 
 6. **Permisos por API:**
 
@@ -244,20 +230,15 @@ grep API_KEY .env
 
    Esperado: `Z_CENTRO` cubierta en 1 tramo y `unreachable_zones` con `Z_FUENTE` y `Z_ISLA`. Con `&trace=true` aparece la traza de 16 entradas de [04](04-algoritmos-bfs.md). Con `base=B_NADA` responde `404 ORIGIN_NOT_FOUND`; con `base=Z_CENTRO`, `422 INVALID_ORIGIN`; con `zone=Z_NADA`, `404 ZONE_NOT_FOUND`; sin clave, `401`.
 
-5. **Consola:** abra <http://localhost:8501>, entre como operador o coordinador y abra la pestaña **Cobertura**.
-   1. Elija **Base Norte** y pulse "Consultar cobertura": verá 2 indicadores (7 nodos alcanzables sin contar la base, que son 6 zonas y Base Sur, y 2 zonas sin cobertura) y la tabla de tramos mínimos (Alameda y Centro a 1 tramo).
-   2. Elija la zona **Centro** y consulte: aparece en verde "Z_CENTRO está cubierta desde B_NORTE (1 tramo).".
-   3. Elija la zona **Fuente**: aparece en ámbar que no hay conexión, y no es un error. Fuente e Isla figuran en "Zonas sin cobertura".
-   4. Marque "Mostrar traza paso a paso" y consulte: el desplegable "Traza del recorrido BFS" muestra el paso a paso.
-   5. Elija **Base Sur** y la zona **Estación**: está cubierta a 2 tramos (Sur → Delicias → Estación). El trayecto Delicias → Estación es de un solo sentido, pero se recorre en esa dirección.
+5. **Consola:** siga el punto **5 (Cobertura)** de [Consola web (React)](#consola-web-react).
 
 6. **Servicio caído:** detenga network-service (`docker compose stop network-service`) y consulte la cobertura por `curl`: responde `503 NETWORK_UNAVAILABLE` sin detalles técnicos. Vuelva a levantarlo con `make up`.
 
 ## Consola web (React)
 
-> Consola nueva ([ADR 0007](adr/0007-consola-web-react-bff.md)) en <http://localhost:8080>. Convive con
-> Streamlit (<http://localhost:8501>) hasta que este recorrido pase completo. No hace falta cambiar
-> `.env`: `WEB_PORT` es opcional (8080 por defecto).
+> Consola de operación ([ADR 0007](adr/0007-consola-web-react-bff.md)) en <http://localhost:8080>.
+> Reemplazó a la consola Streamlit, que se retiró al cerrar F4. No hace falta cambiar `.env`:
+> `WEB_PORT` es opcional (8080 por defecto).
 
 1. **Levantar y verificar:**
 
@@ -336,14 +317,28 @@ grep API_KEY .env
 3. **Swagger:** <http://localhost:8002/docs> lista `GET /api/v1/routes/cheapest` y `GET /api/v1/attention/best`.
 4. **Consola web:** recorrido del punto 6 de [Consola web (React)](#consola-web-react).
 
+## F4 · Aceptación (los 4 escenarios del brief)
+
+> `make test-acceptance` **sustituye** la red de su demo por la de `seed/red_demo.json`.
+> No hay variables nuevas en `.env`.
+
+1. **Levante la demo:** `make reset && make up`.
+2. **Aceptación automática por la consola web:**
+
+   ```bash
+   make test-acceptance
+   ```
+
+   En Windows sin `make`: `sh scripts/acceptance.sh` (Git Bash o WSL). Esperado: `OK: aceptación F4 en verde (4 escenarios)`, con 14 líneas en `OK`. La prueba entra como coordinador y como operador **por la consola web** (cookie de sesión y encabezado anti-CSRF), igual que en el navegador.
+3. **Recorrido de demo en la consola** (<http://localhost:8080>):
+   1. **Éxito:** como coordinador, *Configurar red → Cargar archivo* con `seed/red_demo.json`. Como operador, *Cobertura* de Base Norte con la zona Centro (cubierta en 1 tramo), *Menor costo* de Base Norte a Centro (15 min, contra 30 por el directo) y *Mejor base* para Colina ("Enviar desde Base Sur (Marta): 20 min en 2 tramos.").
+   2. **Zona inexistente:** elija una zona en *Mejor base*, pida al coordinador que la elimine y pulse "Buscar base": la consola muestra "La zona '…' no existe." sin romperse. Por API, `zone=Z_NADA` responde `404 ZONE_NOT_FOUND`.
+   3. **Red desconectada:** *Cobertura* de Base Norte con la zona Fuente (ámbar: "Fuente no está cubierta"), *Menor costo* de Base Norte a Fuente ("No hay ruta en ese sentido") y *Mejor base* para Fuente e Isla (no atendibles, con su motivo). Nada de esto es un error.
+   4. **Peso inválido:** como coordinador, *Nueva conexión* de Base Norte a Isla con `-5` minutos: la vista previa dice "revisar" y al guardar aparece el mensaje de `INVALID_WEIGHT`. La red no cambia.
+
 ## Fases posteriores (fuera del alcance actual)
 
-Se completan al cerrar cada fase (ver [09](09-fases-y-roadmap.md)). Recorrido previsto para la demo final:
-- cargar la red demo;
-- consultar la ruta `B_NORTE → Z_CENTRO` (15 min, contra 30 por el camino de menos tramos);
-- consultar la mejor atención para `Z_COLINA` (B_SUR) y para `Z_FUENTE` (no atendible);
-- probar una zona inexistente;
-- intentar registrar una conexión con peso `-5`, que debe rechazarse con `INVALID_WEIGHT`.
+- El **cambio de requisito docente** (por definir).
 
 ## Problemas comunes
 
