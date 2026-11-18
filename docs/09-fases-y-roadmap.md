@@ -86,7 +86,7 @@ Ambas consolas conviven hasta validar la paridad.
 
 **Checkpoint:** `make up && make test`, más el recorrido de la guía [10](10-guia-prueba-manual.md#consola-web-react). Después, un PR aparte retira `services/console` y marca ADR 0005 y 0006 como reemplazados.
 
-## Fase 3 — F3 · Menor costo (Dijkstra) en 4 carriles 🟡
+## Fase 3 — F3 · Menor costo (Dijkstra) en 4 carriles ✅
 
 1. **Base** (integrador): firmas congeladas, `DESTINATION_NOT_FOUND`, `PathResult.legs`, contrato y reparto.
 2. **F3-A, F3-B y F3-C en paralelo** (personas 1, 2 y 3), cada uno en su rama y sus archivos.

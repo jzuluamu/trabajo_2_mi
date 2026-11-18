@@ -79,3 +79,53 @@ export interface ServiceHealth {
   name: string;
   status: "ok" | "down";
 }
+
+/** Tramo de una ruta: la conexión recorrida en el sentido del viaje (`from` → `to`). */
+export interface RouteLeg {
+  edge_id: string;
+  from: string;
+  to: string;
+  weight: number;
+}
+
+export interface FewestHops {
+  path: string[];
+  hops: number;
+  cost: number;
+}
+
+export interface RouteReport {
+  found: boolean;
+  origin: string;
+  destination: string;
+  path: string[];
+  total_cost: number | null;
+  hops: number | null;
+  legs: RouteLeg[];
+  fewest_hops: FewestHops | null;
+  message: string;
+  trace: TraceStep[] | null;
+}
+
+export interface BestBase {
+  base: string;
+  technicians: { id: string; name: string }[];
+  path: string[];
+  total_cost: number;
+  hops: number;
+}
+
+export interface AlternativeBase {
+  base: string;
+  total_cost: number;
+  hops: number;
+}
+
+export interface AttentionReport {
+  zone: string;
+  found: boolean;
+  best: BestBase | null;
+  alternatives: AlternativeBase[];
+  message: string;
+  trace: TraceStep[] | null;
+}
