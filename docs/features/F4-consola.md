@@ -1,7 +1,7 @@
 # F4 · Consola de operación demostrable
 
-- **Servicio:** `web` (consola web, [ADR 0007](../adr/0007-consola-web-react-bff.md)) · `console` (Streamlit, en retiro) · **Dueño:** Persona 4
-- **Estado:** 🟡 Consola web con paridad funcional de F1 y F2 (red, cobertura y configuración), conviviendo con Streamlit. Con la pestaña **Menor costo** (F3).
+- **Servicio:** `web` (consola web, [ADR 0007](../adr/0007-consola-web-react-bff.md)) · **Dueño:** Persona 4
+- **Estado:** ✅ Terminada (con evidencia): consola web con F1, F2 y F3 y aceptación de los 4 escenarios del brief. La consola Streamlit se retiró (ADR 0005 y 0006 reemplazados por 0007). Pendiente solo el [cambio de requisito docente](#cambio-de-requisito-docente), por definir.
 - **Lea antes:** [ADR 0007](../adr/0007-consola-web-react-bff.md), [03-api](../03-api.md), [06-seguridad](../06-seguridad.md#consola-web-bff-y-sesión), [10-guia-prueba-manual](../10-guia-prueba-manual.md#consola-web-react)
 
 ## Valor de negocio
@@ -9,7 +9,7 @@ El equipo de atención consulta la cobertura y la alternativa de servicio sin in
 
 ## Consola web (ADR 0007) — `services/web`, puerto 8080
 
-SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), TanStack Query y Cytoscape.js. Un BFF en Hono la sirve y guarda la API key en la sesión del servidor. Streamlit sigue en `:8501` hasta que se valide la paridad con la [guía](../10-guia-prueba-manual.md#consola-web-react).
+SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), TanStack Query y Cytoscape.js. Un BFF en Hono la sirve y guarda la API key en la sesión del servidor. Reemplazó a la consola Streamlit (`:8501`), que se retiró el 2026-11-18 tras validar la paridad con la [guía](../10-guia-prueba-manual.md#consola-web-react).
 
 ### Hecho
 - [x] **Sesión:**
@@ -140,7 +140,7 @@ Los tokens viven en `services/web/src/index.css` (`:root` y `.dark`) y la paleta
 
 Cada nodo de la cobertura lleva además el texto "N tramos", "origen" o "sin cobertura", así que nada depende solo del color.
 
-### Consola Streamlit (en retiro)
+### Consola Streamlit (retirada el 2026-11-18; se conserva como historia del diseño)
 
 Propuesta de diseño: lienzo "ServicioCerca · Consola visual" (artefacto privado del equipo).
 
@@ -170,18 +170,59 @@ Propuesta de diseño: lienzo "ServicioCerca · Consola visual" (artefacto privad
 ## Criterios de aceptación (Fases 1 a 3)
 - [x] **Coordinador:** formularios para registrar bases (con técnicos), zonas y conexiones; botón para cargar la red demo (`/network/import`); mensajes de validación legibles.
 - [x] **Operador:** consulta de cobertura (base y zona opcional), ruta de menor costo (origen y destino) y mejor atención (zona).
-- [ ] **Visualización** (pyvis):
+- [x] **Visualización** (Cytoscape en la consola web; antes pyvis):
   - [x] bases y zonas diferenciadas;
   - [x] aristas con peso y dirección;
   - [x] cobertura resaltada: nodos alcanzados y no alcanzados (consola web);
   - [x] ruta resaltada, y el camino de menos tramos en un estilo distinto (punteado en ámbar).
 - [x] Explicación en lenguaje natural del resultado y traza opcional en un desplegable (cobertura y menor costo).
-- [ ] Aceptación de: éxito, zona inexistente, red desconectada y peso inválido.
+- [x] Aceptación de: éxito, zona inexistente, red desconectada y peso inválido (`make test-acceptance`, ver abajo).
 - [ ] Incorporar el **cambio de requisito docente** (Fase 4, por definir).
-- [ ] Evidencia completa de la feature (capturas por escenario).
+- [x] Evidencia completa de la feature (capturas por escenario).
 
 ## Cambio de requisito docente
 _Por definir. Registrar aquí el requisito, el ADR asociado y su impacto cuando se conozca._
+
+## Aceptación de los 4 escenarios del brief
+
+Verificado el 2026-11-18 sobre `feature/F4-cierre`, contra la demo levantada (proyecto Compose aislado con `WEB_PORT=18080`).
+
+**Automática, por la consola web** (`make test-acceptance` → `scripts/acceptance.sh`). Inicia sesión como coordinador y como operador en el BFF, con la cookie de sesión y el encabezado anti-CSRF, igual que en el navegador:
+
+```text
+==> aceptación F4 contra la consola web http://127.0.0.1:18080
+Escenario 1 · Éxito
+  OK    el coordinador registra la red: 11 lugares y 9 conexiones
+  OK    el operador consulta la zona Centro: cubierta desde Base Norte en 1 tramo
+  OK    ruta más rápida Base Norte -> Centro: 15 min por Alameda y Bosque (el directo tarda 30)
+  OK    alternativa entendible para Colina: "Atender desde B_SUR (Marta): 20 min."
+Escenario 2 · Zona inexistente
+  OK    cobertura -> 404 ZONE_NOT_FOUND
+  OK    mejor base -> 404 ZONE_NOT_FOUND
+  OK    ruta -> 404 DESTINATION_NOT_FOUND
+  OK    id mal formado -> 422 VALIDATION_ERROR sin reflejar la entrada
+Escenario 3 · Red desconectada
+  OK    Fuente e Isla quedan sin cobertura desde Base Norte: 200 con covered=false
+  OK    ruta Base Norte -> Fuente: 200 con found=false, sin error
+  OK    Fuente: alcanzable solo por una base sin técnicos -> no atendible, con su motivo
+  OK    Isla: inalcanzable desde toda base, con su motivo
+Escenario 4 · Peso inválido
+  OK    pesos -5, 0 y 1441 -> 422 INVALID_WEIGHT con mensaje legible
+  OK    la red sigue intacta: no se guardó ninguna conexión inválida
+OK: aceptación F4 en verde (4 escenarios)
+```
+
+Caso negativo: con routing-service detenido, la prueba termina con error en el escenario 1 (`503 SERVICE_UNAVAILABLE`).
+
+**En la consola** (Chrome, red demo, clics reales):
+
+| 1 · Éxito: ruta más rápida (operador) | 1 · Éxito: alternativa de atención (operador) |
+|---|---|
+| ![Éxito ruta](evidencia/F4/escenario-1-exito-ruta.jpg) | ![Éxito mejor base](evidencia/F4/escenario-1-exito-mejor-base.jpg) |
+
+| 2 · Zona inexistente: se eliminó mientras estaba elegida | 3 · Red desconectada: Fuente sin cobertura, sin error | 4 · Peso inválido: "revisar" e `INVALID_WEIGHT` (coordinador) |
+|---|---|---|
+| ![Zona inexistente](evidencia/F4/escenario-2-zona-inexistente.jpg) | ![Red desconectada](evidencia/F4/escenario-3-red-desconectada.jpg) | ![Peso inválido](evidencia/F4/escenario-4-peso-invalido.jpg) |
 
 ## Evidencia (Fase 3)
 

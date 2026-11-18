@@ -1,5 +1,7 @@
 # 0005 · Consola en Streamlit
 
+> **Reemplazado por [0007](0007-consola-web-react-bff.md)** (2026-11-18): la consola Streamlit (`services/console`) se retiró al cerrar F4.
+
 - **Estado:** Aceptado · en retiro: lo reemplaza [0007](0007-consola-web-react-bff.md) cuando la consola web alcance paridad
 - **Fecha:** 2026-10-05
 

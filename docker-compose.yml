@@ -64,21 +64,6 @@ services:
       <<: *py-health
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8002/health', timeout=2)"]
 
-  console:
-    <<: *hardening
-    build: { context: ./services/console, target: runtime }
-    environment:
-      NETWORK_SERVICE_URL: http://network-service:8001
-      ROUTING_SERVICE_URL: http://routing-service:8002
-    depends_on:
-      network-service: { condition: service_healthy }
-      routing-service: { condition: service_healthy }
-    ports: ["127.0.0.1:${CONSOLE_PORT:-8501}:8501"]
-    networks: [frontend]
-    healthcheck:
-      <<: *py-health
-      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8501/_stcore/health', timeout=2)"]
-
   # Consola web (ADR 0007): SPA React + BFF que guarda la API key en la sesión del servidor.
   web:
     <<: *hardening

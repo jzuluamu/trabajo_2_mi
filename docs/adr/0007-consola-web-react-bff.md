@@ -29,7 +29,7 @@ Un servicio nuevo, `services/web`, con una sola toolchain (Node 24 LTS, npm):
   - ESLint `strictTypeChecked`, Prettier y `tsc` estricto;
   - `npm audit`;
   - Vitest con cobertura ≥ 85 % en líneas, ramas, funciones y sentencias.
-- **Convivencia:** la consola Streamlit sigue en `:8501` y la web corre en `:8080`. Streamlit se retira en otro PR, cuando la guía de prueba manual pase completa en la consola web.
+- **Convivencia:** la consola Streamlit siguió en `:8501` mientras la web corría en `:8080`. **Streamlit se retiró el 2026-11-18** (`feature/F4-cierre`), cuando la guía de prueba manual pase completa en la consola web.
 
 ## Alternativas consideradas
 - **nginx como proxy y la clave en memoria de JavaScript:** es más simple, pero un XSS podría leer la clave. Con el BFF, la clave nunca llega al navegador, igual que en Streamlit.

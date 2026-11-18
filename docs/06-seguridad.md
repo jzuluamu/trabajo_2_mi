@@ -62,15 +62,6 @@ Ver [ADR 0007](adr/0007-consola-web-react-bff.md) y [F4](features/F4-consola.md#
 - **Contenedor:** `node:24.19.0-alpine3.24` fijado, usuario no root `app`, `read_only`, `cap_drop: ALL` y `no-new-privileges`. Solo se instalan las dependencias del BFF (`hono`, `@hono/node-server`), y el puerto se publica en `127.0.0.1`.
 - **Límite conocido:** las sesiones viven en memoria, así que reiniciar el contenedor `web` cierra todas. Con varias réplicas haría falta un almacén compartido.
 
-## Consola Streamlit (en retiro): grafo embebido
-
-Ver [ADR 0006](adr/0006-grafo-pyvis-embebido-seguro.md):
-- el mapa va en un iframe con **origen opaco** (URL `data:`);
-- tiene CSP `default-src 'none'` y `script-src` solo con los hash de sus dos scripts;
-- no carga recursos externos;
-- los datos de la API se serializan con `tojson` y se muestran como texto plano;
-- los nombres que entran en Markdown de Streamlit se escapan (`md_escape`).
-
 ## Secretos
 
 - `.env` está en `.gitignore`. Solo se versiona `.env.example`, con marcadores `CHANGE_ME_*`.
@@ -84,7 +75,6 @@ Ver [ADR 0006](adr/0006-grafo-pyvis-embebido-seguro.md):
 - `cap_drop: ALL`, `no-new-privileges` y sistema de archivos `read_only` en las APIs, con `/tmp` en tmpfs.
 - Los puertos se publican **solo en 127.0.0.1**. PostgreSQL no se publica y vive en la red `backend`, aislada de routing-service y de la consola.
 - Healthchecks en todos los servicios.
-- Streamlit corre con protección XSRF activa y sin telemetría.
 
 ## Verificación automática (harness)
 

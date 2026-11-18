@@ -33,9 +33,9 @@ Es un trabajo académico de *Matemáticas para Informática*. Además de funcion
 | F1 | [Red de cobertura](docs/features/F1-red-cobertura.md) | `network-service` | ✅ Terminada (con evidencia) |
 | F2 | [Consulta de cobertura (BFS)](docs/features/F2-consulta-cobertura.md) | `routing-service` | ✅ Terminada (con evidencia) |
 | F3 | [Alternativa de menor costo (Dijkstra)](docs/features/F3-menor-costo.md) | `routing-service` | ✅ Terminada (con evidencia) |
-| F4 | [Consola de operación](docs/features/F4-consola.md) | `web` · `console` (en retiro) | 🟡 Consola web (React) con paridad de F1 y F2 |
+| F4 | [Consola de operación](docs/features/F4-consola.md) | `web` | ✅ Terminada (con evidencia); falta solo el requisito docente |
 
-> **Alcance actual: F1, F2 y F3.** F1 se construyó en paralelo por 3 personas o agentes (ver
+> **Alcance actual: F1, F2, F3 y F4.** F1 se construyó en paralelo por 3 personas o agentes (ver
 > [docs/features/F1-red-cobertura.md](docs/features/F1-red-cobertura.md)); F2 le agrega la consulta
 > de cobertura con BFS ([docs/features/F2-consulta-cobertura.md](docs/features/F2-consulta-cobertura.md)).
 > F3 (menor costo con Dijkstra) se construyó en 4 carriles, uno por integrante
@@ -47,7 +47,7 @@ El estado vigente de cada feature y de las fases está en **[docs/README.md](doc
 
 - **Servicios:** Python 3.12 · FastAPI · Pydantic v2 · PostgreSQL 16 · SQLAlchemy 2 · pytest · ruff · mypy · bandit · pip-audit · uv.
 - **Consola web:** Node 24 · React 19 · Vite · TypeScript · Tailwind CSS v4 · shadcn/ui · TanStack Query · Cytoscape.js · Hono (BFF) · Vitest · ESLint.
-- **Infraestructura:** Docker Compose. La consola Streamlit sigue disponible mientras se retira.
+- **Infraestructura:** Docker Compose.
 Las razones de cada elección están en [docs/adr/](docs/adr/).
 
 ```
@@ -66,7 +66,7 @@ make test    # harness completo: lint, tipos, seguridad y pruebas
 ```
 
 Después abra:
-- la consola web: <http://localhost:8080> (la consola Streamlit sigue en <http://localhost:8501> mientras se retira);
+- la consola web: <http://localhost:8080>;
 - Swagger de cada servicio: <http://localhost:8001/docs> y <http://localhost:8002/docs>.
 
 Para iniciar sesión en la consola, copie `COORDINATOR_API_KEY` u `OPERATOR_API_KEY` desde su `.env`.
@@ -83,7 +83,6 @@ Toda la documentación está indexada en **[docs/README.md](docs/README.md)**. A
 services/network-service   F1: red de cobertura (dueño de los datos)
 services/routing-service   F2 y F3: cobertura (BFS) y menor costo (Dijkstra)
 services/web               F4: consola web (React + BFF Hono)
-services/console           F4: consola Streamlit (en retiro)
 seed/                      datos sintéticos de demostración
 docs/                      documentación (fuente de verdad)
 ```

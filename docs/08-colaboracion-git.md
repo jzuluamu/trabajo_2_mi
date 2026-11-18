@@ -40,11 +40,11 @@ Detalle y reglas para no crear conflictos: [features/F3-sesiones.md](features/F3
 feat(network): agregar migración 0001 con tablas de la red
 fix(network): rechazar conexión duplicada inversa bidireccional
 docs(api): documentar código INVALID_ORIGIN
-test(console): cubrir error de servicio no disponible
+test(web): cubrir error de servicio no disponible
 chore: actualizar uv.lock
 ```
 
-El *scope* es el servicio (`network`, `routing` o `console`) o el área (`api`, `docs`, `ci`).
+El *scope* es el servicio (`network`, `routing` o `web`) o el área (`api`, `docs`, `ci`).
 
 ## Pull requests
 

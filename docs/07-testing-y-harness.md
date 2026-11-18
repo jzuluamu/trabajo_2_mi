@@ -47,13 +47,14 @@ Esto ocurrió en la Fase 0: el `Makefile` usaba una regla de patrón `test-%` co
 ## Comandos
 
 ```bash
-make test            # los 4 servicios (equivale a lo que corre la CI)
+make test            # los 3 servicios (equivale a lo que corre la CI)
 make test-network    # solo network-service
 make test-routing    # solo routing-service
-make test-console    # solo console (Streamlit, en retiro)
 make test-web        # solo la consola web (React + BFF)
 make smoke-f1        # humo de F1 contra la demo levantada (make up); reemplaza la red por la demo
 make smoke-f2        # humo de F2 (cobertura) contra la demo levantada; también reemplaza la red por la demo
+make smoke-f3        # humo de F3 (menor costo) contra la demo levantada; también reemplaza la red
+make test-acceptance # aceptación de los 4 escenarios del brief por la consola web; reemplaza la red
 ```
 
 Equivalentes sin `make`, por ejemplo en Windows:
@@ -61,10 +62,10 @@ Equivalentes sin `make`, por ejemplo en Windows:
 ```bash
 docker compose -f docker-compose.test.yml run --rm --build network-tests
 docker compose -f docker-compose.test.yml run --rm --build routing-tests
-docker compose -f docker-compose.test.yml run --rm --build console-tests
 docker compose -f docker-compose.test.yml run --rm --build web-tests
 docker compose -f docker-compose.test.yml down -v
 sh scripts/smoke_f1.sh   # en Git Bash o WSL; requiere curl
+sh scripts/acceptance.sh # aceptación F4 por la consola web; requiere curl
 ```
 
 Para iterar más rápido en local sin Docker (opcional, requiere [uv](https://docs.astral.sh/uv/)):
@@ -102,19 +103,23 @@ Lineamientos:
 - **Dobles de prueba vía puertos:**
   - en routing-service, un `NetworkGateway` en memoria (ver `tests/unit/test_contracts.py`);
   - en network-service, un repositorio en memoria;
-  - en la consola, `httpx.MockTransport` o `monkeypatch` de los clientes.
-- **Consola Streamlit:** se usa `streamlit.testing.v1.AppTest`. La lógica vive en módulos importables (`main_page.py`, `components/`) y `app.py` solo delega.
+  - en la consola web, un BFF falso (`tests/ui/fake-bff.ts`).
 - **Consola web** (`services/web/tests/`):
   - `server/`: el BFF con un `fetch` falso que imita a los servicios (sesión, CSRF, lista blanca, caídas, caducidad y cabeceras);
   - `lib/`: funciones puras (formatos, modelo del mapa, cliente HTTP);
   - `ui/`: Testing Library + `user-event` contra un **BFF falso** (`tests/ui/fake-bff.ts`), por rol y por pestaña.
   - En jsdom, Cytoscape corre en modo *headless* (`tests/setup.ts`) y las pruebas simulan clics en nodos con `lastCy()`.
-  - Se excluyen de la cobertura solo los puntos de entrada sin lógica (`src/main.tsx` y `server/index.ts`), como `app.py` en Streamlit.
+  - Se excluyen de la cobertura solo los puntos de entrada sin lógica (`src/main.tsx` y `server/index.ts`).
 - **Errores:** todo código de error del [contrato](03-api.md) que emita un servicio tiene al menos una prueba.
 
 ## Pruebas de aceptación (Fase 3)
 
-Cubren los 4 escenarios del brief contra la demo levantada (`make up`): éxito, zona inexistente, red desconectada y peso inválido. Se ejecutan con `make test-acceptance` (se agrega en la Fase 3).
+Cubren los 4 escenarios del brief contra la demo levantada (`make up`): éxito, zona inexistente, red desconectada y peso inválido. Se ejecutan con `make test-acceptance` (`scripts/acceptance.sh`).
+
+- Pasan **por la consola web** (`:8080`): inician sesión como coordinador y como operador en el BFF, con la cookie de sesión y el encabezado anti-CSRF, igual que un usuario en el navegador.
+- Reemplazan la red por `seed/red_demo.json` y verifican 14 puntos. Lo detallan [F4](features/F4-consola.md#aceptación-de-los-4-escenarios-del-brief) y la [guía 10](10-guia-prueba-manual.md#f4--aceptación-los-4-escenarios-del-brief).
+- Terminan con código distinto de 0 en la primera falla: por ejemplo, con routing-service detenido fallan en el escenario 1 (`503 SERVICE_UNAVAILABLE`).
+- No son parte de la CI, porque necesitan la demo levantada. Se corren en el checkpoint de la fase.
 
 ## CI
 
