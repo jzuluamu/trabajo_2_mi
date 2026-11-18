@@ -22,6 +22,7 @@ import {
   overlayFor,
   type DraftEdge,
 } from "@/lib/graph-elements";
+import type { RouteOverlay } from "@/lib/route-format";
 import type { Network } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,7 @@ export interface NetworkGraphProps {
   selected?: string | null;
   onSelect?: (nodeId: string | null) => void;
   coverage?: CoverageOverlay | null;
+  route?: RouteOverlay | null;
   draft?: DraftEdge | null;
   label?: string;
   className?: string;
@@ -93,6 +95,7 @@ export function NetworkGraph({
   selected = null,
   onSelect,
   coverage = null,
+  route = null,
   draft = null,
   label,
   className,
@@ -170,7 +173,7 @@ export function NetworkGraph({
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
-    const overlay = overlayFor(network, { selected, coverage });
+    const overlay = overlayFor(network, { selected, coverage, route });
     const element = draftElement(network, draft);
     cy.batch(() => {
       cy.remove(cy.getElementById(DRAFT_ID));
@@ -181,7 +184,7 @@ export function NetworkGraph({
       });
       for (const [id, classes] of overlay.classes) cy.getElementById(id).addClass(classes);
     });
-  }, [network, selected, coverage, draft]);
+  }, [network, selected, coverage, route, draft]);
 
   const handleControl = (control: Control) => {
     const cy = cyRef.current;

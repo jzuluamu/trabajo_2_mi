@@ -1,9 +1,10 @@
-import { LogOut, Map as MapIcon, Radar, Settings2 } from "lucide-react";
+import { LogOut, Map as MapIcon, Radar, Route, Settings2 } from "lucide-react";
 
 import { AdminTab } from "@/components/admin/admin-tab";
 import { Brand } from "@/components/brand";
 import { CoverageTab } from "@/components/coverage/coverage-tab";
 import { NetworkTab } from "@/components/network/network-tab";
+import { RouteTab } from "@/components/route/route-tab";
 import { ServiceStatus } from "@/components/service-status";
 import { ErrorState, NetworkSkeleton } from "@/components/states";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -25,8 +26,8 @@ const ON_INK =
 const TAB_TRIGGER =
   "h-12 flex-none rounded-none px-4 text-[0.9375rem] data-[state=active]:font-semibold after:bg-brand group-data-[orientation=horizontal]/tabs:after:bottom-0 group-data-[orientation=horizontal]/tabs:after:h-[3px]";
 
-const OPERATOR_TABS = ["red", "cobertura"] as const;
-const COORDINATOR_TABS = ["red", "cobertura", "configurar"] as const;
+const OPERATOR_TABS = ["red", "cobertura", "ruta"] as const;
+const COORDINATOR_TABS = ["red", "cobertura", "ruta", "configurar"] as const;
 type TabId = (typeof COORDINATOR_TABS)[number];
 
 export function ConsoleShell({ role }: { role: Role }) {
@@ -83,6 +84,10 @@ export function ConsoleShell({ role }: { role: Role }) {
               <Radar aria-hidden />
               Cobertura
             </TabsTrigger>
+            <TabsTrigger value="ruta" className={TAB_TRIGGER}>
+              <Route aria-hidden />
+              Menor costo
+            </TabsTrigger>
             {isCoordinator && (
               <TabsTrigger value="configurar" className={TAB_TRIGGER}>
                 <Settings2 aria-hidden />
@@ -115,6 +120,9 @@ export function ConsoleShell({ role }: { role: Role }) {
               </TabsContent>
               <TabsContent value="cobertura">
                 <CoverageTab network={network.data} />
+              </TabsContent>
+              <TabsContent value="ruta">
+                <RouteTab network={network.data} />
               </TabsContent>
               {isCoordinator && (
                 <TabsContent value="configurar">

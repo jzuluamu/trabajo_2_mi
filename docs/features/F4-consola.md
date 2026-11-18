@@ -1,7 +1,7 @@
 # F4 · Consola de operación demostrable
 
 - **Servicio:** `web` (consola web, [ADR 0007](../adr/0007-consola-web-react-bff.md)) · `console` (Streamlit, en retiro) · **Dueño:** Persona 4
-- **Estado:** 🟡 Consola web con paridad funcional de F1 y F2 (red, cobertura y configuración), conviviendo con Streamlit. Rutas pendientes (F3).
+- **Estado:** 🟡 Consola web con paridad funcional de F1 y F2 (red, cobertura y configuración), conviviendo con Streamlit. Con la pestaña **Menor costo** (F3).
 - **Lea antes:** [ADR 0007](../adr/0007-consola-web-react-bff.md), [03-api](../03-api.md), [06-seguridad](../06-seguridad.md#consola-web-bff-y-sesión), [10-guia-prueba-manual](../10-guia-prueba-manual.md#consola-web-react)
 
 ## Valor de negocio
@@ -43,7 +43,14 @@ SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), Tan
 - [x] **Tema claro y oscuro** (claro, oscuro o según el sistema; se recuerda) con tokens semánticos. El mapa usa su paleta por tema.
 - [x] **Diseño móvil** (375 px sin desplazamiento horizontal) y áreas táctiles de 44 px en móvil.
 - [x] **Estados** de carga (esqueletos), vacío (con la siguiente acción), error (con "Reintentar") y éxito (toasts).
-- [x] La pestaña activa queda en la URL (`#red`, `#cobertura`, `#configurar`).
+- [x] **Menor costo** (ambos roles, F3):
+  - *Entre dos lugares*: Desde/Hasta por nombre, botón "Invertir el sentido" y cálculo paso a paso opcional;
+  - **el mapa pinta la ruta más rápida**: salida (anillo ámbar), paradas con los minutos acumulados ("a 10 min"), llegada con el total, tramos en azul con la flecha en el sentido del viaje (también en conexiones de ida y vuelta recorridas al revés) y el resto atenuado;
+  - si el camino de menos tramos es otro, se dibuja punteado en ámbar y se explica: "El camino de menos tramos (Base Norte → Centro, 1 tramo) tarda 30 min: esta ruta ahorra 15 min.";
+  - frase principal con nombres ("De Base Norte a Centro: 15 min en 3 tramos, por Alameda y Bosque.") e itinerario numerado tramo a tramo;
+  - *Mejor base*: elige la zona; recomienda la base con técnico disponible ("Enviar desde Base Sur (Marta): 20 min en 2 tramos."), pinta su ruta y lista las otras bases. Si no se puede atender, lo explica con nombres;
+  - sin ruta o sin base que atienda, el aviso es ámbar: es una respuesta válida, no un error.
+- [x] La pestaña activa queda en la URL (`#red`, `#cobertura`, `#ruta`, `#configurar`).
 - [x] Las posiciones del mapa se conservan al recargar la red y entre pestañas.
 
 ### Endpoints del BFF (internos de la consola; no son parte del contrato)
@@ -162,13 +169,13 @@ Propuesta de diseño: lienzo "ServicioCerca · Consola visual" (artefacto privad
 
 ## Criterios de aceptación (Fases 1 a 3)
 - [x] **Coordinador:** formularios para registrar bases (con técnicos), zonas y conexiones; botón para cargar la red demo (`/network/import`); mensajes de validación legibles.
-- [ ] **Operador:** consulta de cobertura (base y zona opcional) ✅, ruta de menor costo (origen y destino) y mejor atención (zona), estas dos pendientes de F3.
+- [x] **Operador:** consulta de cobertura (base y zona opcional), ruta de menor costo (origen y destino) y mejor atención (zona).
 - [ ] **Visualización** (pyvis):
   - [x] bases y zonas diferenciadas;
   - [x] aristas con peso y dirección;
   - [x] cobertura resaltada: nodos alcanzados y no alcanzados (consola web);
-  - [ ] ruta resaltada, y el camino de menos tramos en un estilo distinto (F3).
-- [ ] Explicación en lenguaje natural del resultado (`message`) y traza opcional en un desplegable: hecho para cobertura; falta F3.
+  - [x] ruta resaltada, y el camino de menos tramos en un estilo distinto (punteado en ámbar).
+- [x] Explicación en lenguaje natural del resultado y traza opcional en un desplegable (cobertura y menor costo).
 - [ ] Aceptación de: éxito, zona inexistente, red desconectada y peso inválido.
 - [ ] Incorporar el **cambio de requisito docente** (Fase 4, por definir).
 - [ ] Evidencia completa de la feature (capturas por escenario).
@@ -200,4 +207,4 @@ Consola web con la identidad visual (2026-11-11, Chrome headless, red demo). Las
 
 En el navegador no hubo errores de JavaScript ni violaciones de CSP.
 
-Pendiente: capturas de los escenarios de ruta (F3).
+Escenarios de ruta (F3): ver la evidencia de [F3-D](F3-menor-costo.md#f3-d-integración).

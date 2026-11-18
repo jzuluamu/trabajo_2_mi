@@ -3,6 +3,7 @@
  * Los errores llegan con el formato del contrato `{code, message, details}` y se lanzan como ApiError.
  */
 import type {
+  AttentionReport,
   CoverageReport,
   ImportPayload,
   ImportSummary,
@@ -11,6 +12,7 @@ import type {
   NetworkNode,
   NodeInput,
   Role,
+  RouteReport,
   ServiceHealth,
 } from "@/lib/types";
 
@@ -83,5 +85,13 @@ export const api = {
     const params = new URLSearchParams({ base, trace: String(trace) });
     if (zone) params.set("zone", zone);
     return request<CoverageReport>("GET", `/api/routing/coverage?${params.toString()}`);
+  },
+  cheapestRoute: (origin: string, destination: string, trace: boolean) => {
+    const params = new URLSearchParams({ origin, destination, trace: String(trace) });
+    return request<RouteReport>("GET", `/api/routing/routes/cheapest?${params.toString()}`);
+  },
+  bestAttention: (zone: string, trace: boolean) => {
+    const params = new URLSearchParams({ zone, trace: String(trace) });
+    return request<AttentionReport>("GET", `/api/routing/attention/best?${params.toString()}`);
   },
 };

@@ -25,7 +25,7 @@ El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre un
 | F3-A | `DijkstraPathFinder` y `BreadthFirstPathFinder` | Juan Pablo | ✅ Terminada (con evidencia) | [Sesión 1](features/F3-sesiones.md#sesión-1--persona-1--f3-a-algoritmos) |
 | F3-B | `FindCheapestRoute` y `FindBestAttention` | Alexander | ✅ Terminada (con evidencia) | [Sesión 2](features/F3-sesiones.md#sesión-2--persona-2--f3-b-casos-de-uso) |
 | F3-C | `/routes/cheapest`, `/attention/best` y mapeo de errores | Juan Andrés | ✅ Terminada (con evidencia) | [Sesión 3](features/F3-sesiones.md#sesión-3--persona-3--f3-c-api-rest) |
-| F3-D | Pestaña **Menor costo** en la consola web, humo F3 y evidencia (después de A, B y C) | Integrador | ⏳ Pendiente | [Sesión 4](features/F3-sesiones.md#sesión-4--integrador--f3-d-consola-humo-y-evidencia) |
+| F3-D | Pestaña **Menor costo** en la consola web, humo F3 y evidencia (después de A, B y C) | Integrador | ✅ Terminada (con evidencia) | [Sesión 4](features/F3-sesiones.md#sesión-4--integrador--f3-d-consola-humo-y-evidencia) |
 
 ## Estado de features
 
@@ -33,8 +33,8 @@ El equipo construyó **F1 · Red de cobertura** en 3 carriles paralelos sobre un
 |---|---|---|---|---|
 | F1 | Red de cobertura | `network-service` | ✅ Terminada (con evidencia) | [F1](features/F1-red-cobertura.md) |
 | F2 | Consulta de cobertura (BFS) | `routing-service` | ✅ Terminada (con evidencia) | [F2](features/F2-consulta-cobertura.md) |
-| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | 🟡 En construcción | [F3](features/F3-menor-costo.md) |
-| F4 | Consola de operación | `web` (React, ADR 0007) · `console` (Streamlit, en retiro) | 🟡 Consola web con paridad de F1 y F2 y la cobertura resaltada en el mapa; falta F3 | [F4](features/F4-consola.md) |
+| F3 | Alternativa de menor costo (Dijkstra) | `routing-service` | ✅ Terminada (con evidencia) | [F3](features/F3-menor-costo.md) |
+| F4 | Consola de operación | `web` (React, ADR 0007) · `console` (Streamlit, en retiro) | 🟡 Consola web con F1, F2 y F3: cobertura y ruta más rápida resaltadas en el mapa | [F4](features/F4-consola.md) |
 
 Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · ⛔ bloqueada
 
@@ -47,7 +47,7 @@ Leyenda: ⏳ pendiente · 🟡 en progreso · ✅ terminada (con evidencia) · �
 | 1.D — Integración de F1 | Punta a punta, interfaz mínima y evidencia | ✅ Terminada |
 | 2 — F2 · Consulta de cobertura (BFS) | BFS, caso de uso, gateway HTTP, endpoint, pestaña de la consola y humo | ✅ Terminada |
 | F4 · Consola web | SPA React + BFF ([ADR 0007](adr/0007-consola-web-react-bff.md)), conviviendo con Streamlit hasta validar la paridad | 🟡 En progreso |
-| 3 — F3 · Menor costo (Dijkstra) en 4 carriles | Base, algoritmos, casos de uso, API, consola y humo | 🟡 En progreso |
+| 3 — F3 · Menor costo (Dijkstra) en 4 carriles | Base, algoritmos, casos de uso, API, consola y humo | ✅ Terminada |
 | Posterior | F4 completa, aceptación y cambio docente | ⛔ Fuera del alcance actual |
 
 Detalle en [09-fases-y-roadmap.md](09-fases-y-roadmap.md).

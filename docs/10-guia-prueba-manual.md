@@ -276,7 +276,7 @@ grep API_KEY .env
 3. **Inicio de sesión:**
    1. Una clave incorrecta muestra "API key inválida." bajo el campo.
    2. `INTERNAL_API_KEY` muestra "Esta clave no corresponde a un usuario de la consola.".
-   3. El operador ve las pestañas **Red** y **Cobertura**. El coordinador ve además **Configurar red**.
+   3. El operador ve las pestañas **Red**, **Cobertura** y **Menor costo**. El coordinador ve además **Configurar red**.
    4. La cabecera dice "Todo en línea".
 
 4. **Red** (con la red demo cargada):
@@ -295,18 +295,26 @@ grep API_KEY .env
    4. Con "Incluir el recorrido paso a paso", el botón "Ver el recorrido paso a paso (16 pasos)" despliega la traza con nombres.
    5. "¿Cómo se calcula?" explica la regla.
 
-6. **Configurar red** (coordinador):
+6. **Menor costo** (F3):
+   1. En *Entre dos lugares*, Desde **Base Norte**, Hasta **Centro**, y "Ver ruta". Arriba aparece "De Base Norte a Centro: 15 min en 3 tramos, por Alameda y Bosque.".
+   2. En el mapa, la ruta va en azul con flechas: Base Norte (salida) → Alameda ("a 5 min") → Bosque ("a 10 min") → Centro ("llegada · 15 min"). El trayecto directo de 30 min queda punteado en ámbar, y el aviso explica "…tarda 30 min: esta ruta ahorra 15 min.". El resto del mapa se atenúa.
+   3. "Recorrido (3 tramos)" lista cada tramo con sus minutos y la llegada acumulada.
+   4. Hasta **Fuente**: aviso ámbar "No hay ruta en ese sentido", sin error. Desde **Base Sur** Hasta **Estación**: 15 min por Delicias; pulse "Invertir el sentido" y vuelva a buscar: no hay ruta (el trayecto Delicias → Estación es de solo ida).
+   5. Con "Incluir el cálculo paso a paso", el botón "Ver el cálculo paso a paso" despliega los pasos de Dijkstra.
+   6. En *Mejor base*, zona **Colina** y "Buscar base": "Enviar desde Base Sur (Marta): 20 min en 2 tramos.", la ruta pintada y Base Norte (25 min) en "Otras bases con técnico disponible". Con **Fuente**: "…solo es alcanzable desde bases sin técnicos disponibles (Base Oeste).".
+
+7. **Configurar red** (coordinador):
    1. *Nueva base o zona*: deje "Base", escriba el nombre `Base Este` y verá el identificador `B_ESTE` ya propuesto. Escriba `Sara` como técnico 1 y pulse "Agregar base": aparece "Listo: se agregó Base Este.".
    2. Repita con el nombre `Base Este`: el identificador propuesto pasa a `B_ESTE_2`. Cámbielo a `B_ESTE` y pulse "Agregar base": verá "Ya existe un nodo con id 'B_ESTE'.".
    3. *Nueva conexión*: Desde "Base Este", Hasta "Isla", minutos `-5`. El identificador propuesto es `E10`. Antes de guardar, el mapa dibuja la línea punteada roja con "revisar". Pulse "Guardar conexión": verá el mensaje de `INVALID_WEIGHT`. Cambie a `12`: la vista previa pasa a ámbar. Guarde: "Listo: se conectó Base Este con Isla (12 min).".
    4. *Eliminar*: elija el lugar "Base Este". Verá "Antes elimine su conexión: Base Este ↔ Isla · 12 min." y el botón deshabilitado. Elimine esa conexión (con confirmación) y luego el lugar.
    5. *Cargar archivo*: arrastre `seed/red_demo.json` al área (o haga clic para elegirlo), deje "Reemplazar todo" y pulse "Cargar red": "Red cargada: 11 lugares y 9 conexiones.".
 
-7. **Tema y móvil:**
+8. **Tema y móvil:**
    1. El botón del sol o la luna cambia entre claro, oscuro y "Según el sistema". El mapa cambia de paleta y la preferencia se recuerda al recargar.
    2. Con el navegador a 375 px de ancho (modo dispositivo), no hay desplazamiento horizontal, el estado del sistema aparece bajo la cabecera y los controles del mapa quedan en una fila.
 
-8. **Caída de un servicio:**
+9. **Caída de un servicio:**
 
    ```bash
    docker compose stop routing-service
@@ -317,6 +325,16 @@ grep API_KEY .env
    ```bash
    docker compose start routing-service
    ```
+
+## F3 · Alternativa de menor costo
+
+> `sh scripts/smoke_f3.sh` **sustituye** la red de su demo por la de `seed/red_demo.json`.
+> No hay variables nuevas en `.env`.
+
+1. **Levante la demo:** `make reset && make up`.
+2. **Harness y humo:** `make test` y luego `sh scripts/smoke_f3.sh`. Esperado: `OK: smoke F3 en verde`, con los doce pasos en `OK`.
+3. **Swagger:** <http://localhost:8002/docs> lista `GET /api/v1/routes/cheapest` y `GET /api/v1/attention/best`.
+4. **Consola web:** recorrido del punto 6 de [Consola web (React)](#consola-web-react).
 
 ## Fases posteriores (fuera del alcance actual)
 

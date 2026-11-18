@@ -2,13 +2,15 @@
  * BFF falso para las pruebas de interfaz: reproduce la forma de las respuestas y de los errores
  * de docs/03-api.md, sin reimplementar todas las reglas (como tests/fake_network.py en la consola).
  */
-import { COVERAGE_NORTE, DEMO } from "../fixtures";
+import { ATTENTION_COLINA, COVERAGE_NORTE, DEMO, ROUTE_NORTE_CENTRO } from "../fixtures";
 import type {
+  AttentionReport,
   CoverageReport,
   Network,
   NetworkEdge,
   NodeInput,
   Role,
+  RouteReport,
   ServiceHealth,
 } from "@/lib/types";
 
@@ -104,6 +106,8 @@ export class FakeBff {
     }
     if (path === "/api/network/network/import") return this.importNetwork(body as ImportBody);
     if (path === "/api/routing/coverage") return this.coverage(url.searchParams);
+    if (path === "/api/routing/routes/cheapest") return this.route(url.searchParams);
+    if (path === "/api/routing/attention/best") return this.attention(url.searchParams);
     return error({ status: 404, code: "NOT_FOUND", message: "Recurso no encontrado." });
   }
 
@@ -210,6 +214,94 @@ export class FakeBff {
         { step: 1, action: "visit", node: "B_NORTE", data: { hops: 0 } },
         { step: 2, action: "enqueue", node: "Z_ALAMEDA", data: { hops: 1, from: "B_NORTE" } },
       ];
+    }
+    return reply(200, report);
+  }
+
+  /** routing-service falso: B_NORTE → Z_CENTRO es la ruta de docs/05; Fuente e Isla, sin ruta. */
+  private route(params: URLSearchParams): Response {
+    const origin = params.get("origin") ?? "";
+    const destination = params.get("destination") ?? "";
+    const ids = new Set(this.network.nodes.map((n) => n.id));
+    if (!ids.has(origin)) {
+      return error({
+        status: 404,
+        code: "ORIGIN_NOT_FOUND",
+        message: `El origen '${origin}' no existe.`,
+      });
+    }
+    if (!ids.has(destination)) {
+      return error({
+        status: 404,
+        code: "DESTINATION_NOT_FOUND",
+        message: `El destino '${destination}' no existe.`,
+      });
+    }
+    let report: RouteReport;
+    if (origin === "B_NORTE" && destination === "Z_CENTRO") {
+      report = structuredClone(ROUTE_NORTE_CENTRO);
+    } else if (origin === destination) {
+      report = {
+        ...structuredClone(ROUTE_NORTE_CENTRO),
+        origin,
+        destination,
+        path: [origin],
+        total_cost: 0,
+        hops: 0,
+        legs: [],
+        fewest_hops: { path: [origin], hops: 0, cost: 0 },
+      };
+    } else {
+      report = {
+        found: false,
+        origin,
+        destination,
+        path: [],
+        total_cost: null,
+        hops: null,
+        legs: [],
+        fewest_hops: null,
+        message: `No hay ruta de ${origin} a ${destination}.`,
+        trace: null,
+      };
+    }
+    if (params.get("trace") === "true") {
+      report.trace = [
+        { step: 1, action: "pop", node: origin, data: { cost: 0 } },
+        {
+          step: 1,
+          action: "relax",
+          node: "Z_ALAMEDA",
+          data: { cost: 5, from: origin, edge_id: "E02" },
+        },
+      ];
+    }
+    return reply(200, report);
+  }
+
+  /** Mejor atención: Colina se atiende desde B_SUR; Fuente solo la alcanza una base sin técnicos. */
+  private attention(params: URLSearchParams): Response {
+    const zone = params.get("zone") ?? "";
+    if (!this.network.nodes.some((n) => n.id === zone && n.type === "ZONE")) {
+      return error({
+        status: 404,
+        code: "ZONE_NOT_FOUND",
+        message: `La zona '${zone}' no existe.`,
+      });
+    }
+    const report: AttentionReport =
+      zone === "Z_COLINA"
+        ? structuredClone(ATTENTION_COLINA)
+        : {
+            zone,
+            found: false,
+            best: null,
+            alternatives: [],
+            message: `${zone} no se puede atender: solo es alcanzable desde bases sin técnicos disponibles (B_OESTE).`,
+            trace: null,
+          };
+    if (params.get("trace") === "true") {
+      report.trace = [{ step: 1, action: "pop", node: "B_SUR", data: { cost: 0, base: "B_SUR" } }];
     }
     return reply(200, report);
   }

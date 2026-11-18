@@ -1,4 +1,4 @@
-import type { CoverageReport, Network } from "@/lib/types";
+import type { AttentionReport, CoverageReport, Network, RouteReport } from "@/lib/types";
 
 /** Copia de seed/red_demo.json (la imagen de pruebas no incluye `seed/`). */
 export const DEMO: Network = {
@@ -59,5 +59,38 @@ export const COVERAGE_NORTE: CoverageReport = {
   ],
   unreachable_zones: ["Z_FUENTE", "Z_ISLA"],
   zone: null,
+  trace: null,
+};
+
+/** Respuesta real de routing-service para B_NORTE → Z_CENTRO en la red demo (docs/05). */
+export const ROUTE_NORTE_CENTRO: RouteReport = {
+  found: true,
+  origin: "B_NORTE",
+  destination: "Z_CENTRO",
+  path: ["B_NORTE", "Z_ALAMEDA", "Z_BOSQUE", "Z_CENTRO"],
+  total_cost: 15,
+  hops: 3,
+  legs: [
+    { edge_id: "E02", from: "B_NORTE", to: "Z_ALAMEDA", weight: 5 },
+    { edge_id: "E03", from: "Z_ALAMEDA", to: "Z_BOSQUE", weight: 5 },
+    { edge_id: "E04", from: "Z_BOSQUE", to: "Z_CENTRO", weight: 5 },
+  ],
+  fewest_hops: { path: ["B_NORTE", "Z_CENTRO"], hops: 1, cost: 30 },
+  message: "Ruta de menor costo: 15 min en 3 tramos (el camino de menos tramos cuesta 30 min).",
+  trace: null,
+};
+
+export const ATTENTION_COLINA: AttentionReport = {
+  zone: "Z_COLINA",
+  found: true,
+  best: {
+    base: "B_SUR",
+    technicians: [{ id: "T03", name: "Marta" }],
+    path: ["B_SUR", "Z_DELICIAS", "Z_COLINA"],
+    total_cost: 20,
+    hops: 2,
+  },
+  alternatives: [{ base: "B_NORTE", total_cost: 25, hops: 4 }],
+  message: "Atender desde B_SUR (Marta): 20 min.",
   trace: null,
 };

@@ -1,6 +1,6 @@
 # F3 · Alternativa de atención de menor costo (Dijkstra) — 4 carriles
 
-- **Servicio:** `routing-service` (+ pestaña en la consola web `web`, [ADR 0007](../adr/0007-consola-web-react-bff.md)) · **Estado:** 🟡 En construcción
+- **Servicio:** `routing-service` (+ pestaña en la consola web `web`, [ADR 0007](../adr/0007-consola-web-react-bff.md)) · **Estado:** ✅ Terminada (con evidencia)
 - **Lea antes:** [05-algoritmos-dijkstra](../05-algoritmos-dijkstra.md), [02-modelo-de-grafo](../02-modelo-de-grafo.md), [03-api](../03-api.md#get-apiv1routescheapestoriginb_nortedestinationz_centrotracetrue--f3)
 - **Qué hace cada integrante y cómo evitar conflictos:** [F3-sesiones.md](F3-sesiones.md)
 
@@ -8,14 +8,14 @@
 El operador consulta la ruta de llegada con el menor tiempo estimado y la base con técnico disponible que conviene enviar.
 
 ## Criterios de aceptación
-- [ ] `/routes/cheapest` recibe origen y destino, y devuelve `path`, `legs` y `total_cost` cuando existe un camino.
-- [ ] Rechaza de forma explícita los pesos que invalidan Dijkstra (`INVALID_WEIGHT`), con defensa en profundidad.
-- [ ] Explica un caso donde menos tramos no es menor costo: campo `fewest_hops` y el ejemplo B_NORTE → Z_CENTRO.
-- [ ] Prueba casos de ruta posible e imposible (`found=false`, sin error).
-- [ ] `/attention/best` elige la base con técnico disponible de menor costo y distingue las zonas inalcanzables de las alcanzables solo por bases sin técnicos.
-- [ ] Dijkstra **implementado por el equipo** (`DijkstraPathFinder`, que implementa `PathFinder`) con `heapq` y reconstrucción por `pred`.
-- [ ] `trace=true` coincide con la traza de [05](../05-algoritmos-dijkstra.md).
-- [ ] Pestaña **Menor costo** en la consola web para ambos roles, con la ruta resaltada en el mapa.
+- [x] `/routes/cheapest` recibe origen y destino, y devuelve `path`, `legs` y `total_cost` cuando existe un camino.
+- [x] Rechaza de forma explícita los pesos que invalidan Dijkstra (`INVALID_WEIGHT`), con defensa en profundidad.
+- [x] Explica un caso donde menos tramos no es menor costo: campo `fewest_hops` y el ejemplo B_NORTE → Z_CENTRO.
+- [x] Prueba casos de ruta posible e imposible (`found=false`, sin error).
+- [x] `/attention/best` elige la base con técnico disponible de menor costo y distingue las zonas inalcanzables de las alcanzables solo por bases sin técnicos.
+- [x] Dijkstra **implementado por el equipo** (`DijkstraPathFinder`, que implementa `PathFinder`) con `heapq` y reconstrucción por `pred`.
+- [x] `trace=true` coincide con la traza de [05](../05-algoritmos-dijkstra.md).
+- [x] Pestaña **Menor costo** en la consola web para ambos roles, con la ruta resaltada en el mapa.
 
 ## Construcción: base + 4 carriles
 
@@ -129,4 +129,20 @@ Verificado el 2026-11-11 sobre `feature/F3C-api-rest`.
 - **Swagger:** tras reconstruir el stack, `/openapi.json` registra `GET /api/v1/routes/cheapest` y `GET /api/v1/attention/best`; los cinco servicios quedaron `Healthy`.
 
 ### F3-D (integración)
-_Pendiente._
+Verificado el 2026-11-18 sobre `feature/F3D-consola-humo`, con A, B y C ya en `main`.
+
+- **Consola web, pestaña "Menor costo"** (`services/web/src/components/route/`): al elegir **Desde** y **Hasta**, el mapa pinta la ruta más rápida en azul, con la flecha de cada tramo en el sentido del viaje y los minutos acumulados en cada parada ("Bosque · a 10 min", "Centro · llegada · 15 min"). Si el camino de menos tramos es otro, se dibuja punteado en ámbar y se explica cuánto más tarda. "Mejor base" pinta la ruta desde la base recomendada y lista las otras bases con técnico. Sin ruta o sin base que atienda, el aviso es ámbar y no es un error.
+- **Lógica pura y probada:** `src/lib/route-format.ts` (superposición, itinerario, textos con nombres) y la superposición de ruta en `src/lib/graph-elements.ts`. Pruebas: `tests/lib/route-format.test.ts` y `tests/ui/route-tab.test.tsx`.
+- **Harness de la consola web:** ESLint, Prettier, `tsc` y Vitest en verde: **163 pruebas** (22 nuevas), cobertura 97,6 %. `npm audit` falla por avisos nuevos ajenos a este cambio (ver la nota de dependencias más abajo).
+- **Humo contra Docker** (`sh scripts/smoke_f3.sh`, base limpia, proyecto Compose aislado con `NETWORK_PORT=18001` y `ROUTING_PORT=18002`): `OK: smoke F3 en verde`, con los 12 pasos (ruta 15 frente a 30 min, ruta imposible, un solo sentido, traza, los 4 ejemplos de mejor atención, 404, peso `-5` → 422 y 401).
+- **Navegador** (Chrome, red demo):
+
+  | Base Norte → Centro: ruta más rápida y camino de menos tramos | Mejor base para Colina |
+  |---|---|
+  | ![Ruta](evidencia/F3/web-ruta.jpg) | ![Mejor base](evidencia/F3/web-mejor-base.jpg) |
+
+  | Base Norte → Fuente: sin ruta, sin error | Base Sur → Estación (un solo sentido), tema oscuro |
+  |---|---|
+  | ![Sin camino](evidencia/F3/web-ruta-sin-camino.jpg) | ![Oscuro](evidencia/F3/web-ruta-oscuro.jpg) |
+
+- **Nota de dependencias:** `npm audit` (consola web) reporta avisos nuevos: `hono` y `@hono/node-server` (moderados, con versión corregida) y `picomatch` (alto, sin versión corregida publicada; solo lo usan las herramientas de desarrollo y no llega a la imagen de producción). Se atiende en un PR aparte.

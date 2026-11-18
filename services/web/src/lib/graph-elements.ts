@@ -10,6 +10,7 @@ import type { ElementDefinition, StylesheetJson } from "cytoscape";
 
 import type { CoverageOverlay } from "@/lib/coverage-format";
 import { formatMinutes, freeTechnicians, plural } from "@/lib/network-format";
+import type { RouteOverlay } from "@/lib/route-format";
 import type { Network, NetworkEdge, NetworkNode } from "@/lib/types";
 
 export const DRAFT_ID = "__draft__";
@@ -24,6 +25,12 @@ export const OVERLAY_CLASSES = [
   "hop-3",
   "hop-4",
   "unreached",
+  "route-origin",
+  "route-destination",
+  "on-route",
+  "route",
+  "route-reverse",
+  "route-alt",
 ] as const;
 type OverlayClass = (typeof OVERLAY_CLASSES)[number];
 
@@ -203,16 +210,61 @@ function add(map: Map<string, OverlayClass[]>, id: string, ...classes: OverlayCl
   map.set(id, [...(map.get(id) ?? []), ...classes]);
 }
 
+/**
+ * Ruta (F3): salida y llegada marcadas, cada parada con los minutos acumulados, los tramos en el
+ * sentido del viaje y el camino de menos tramos (si es otro) punteado en ámbar. El resto se atenúa.
+ */
+function routeOverlayFor(network: Network, route: RouteOverlay): Overlay {
+  const classes = new Map<string, OverlayClass[]>();
+  const labels = new Map<string, string>();
+  const onRoute = new Set(route.path);
+  for (const node of network.nodes) {
+    const arrival = route.arrivals.get(node.id) ?? 0;
+    if (node.id === route.origin) {
+      add(classes, node.id, "route-origin");
+      labels.set(node.id, `${node.name}\nsalida`);
+      if (node.id === route.destination) add(classes, node.id, "route-destination");
+    } else if (node.id === route.destination) {
+      add(classes, node.id, "route-destination");
+      labels.set(node.id, `${node.name}\nllegada · ${formatMinutes(arrival)}`);
+    } else if (onRoute.has(node.id)) {
+      add(classes, node.id, "on-route");
+      labels.set(node.id, `${node.name}\na ${formatMinutes(arrival)}`);
+    } else {
+      add(classes, node.id, "faded");
+    }
+  }
+  const forward = new Map(route.edges.map((edge) => [edge.id, edge.forward]));
+  const alternative = new Set(route.alternative);
+  for (const edge of network.edges) {
+    const sense = forward.get(edge.id);
+    if (sense !== undefined)
+      add(classes, edge.id, "route", ...(sense ? [] : ["route-reverse" as const]));
+    else if (alternative.has(edge.id)) add(classes, edge.id, "route-alt");
+    else add(classes, edge.id, "faded");
+  }
+  return { classes, labels };
+}
+
 export function overlayFor(
   network: Network,
   {
     selected = null,
     coverage = null,
-  }: { selected?: string | null; coverage?: CoverageOverlay | null },
+    route = null,
+  }: {
+    selected?: string | null;
+    coverage?: CoverageOverlay | null;
+    route?: RouteOverlay | null;
+  },
 ): Overlay {
   const classes = new Map<string, OverlayClass[]>();
   const labels = new Map<string, string>();
   const ids = new Set(network.nodes.map((n) => n.id));
+
+  if (route && ids.has(route.origin) && ids.has(route.destination)) {
+    return routeOverlayFor(network, route);
+  }
 
   if (coverage && ids.has(coverage.origin)) {
     const covered = new Set([coverage.origin, ...coverage.hops.keys()]);
@@ -362,6 +414,47 @@ export function graphStyle(p: GraphPalette): StylesheetJson {
       },
     },
     { selector: "edge.reached", style: strong },
+    {
+      selector: "node.on-route",
+      style: { "background-color": p.hops[3], "border-color": p.accent, "border-width": 3 },
+    },
+    {
+      selector: "node.route-destination",
+      style: { "background-color": p.accent, "border-color": p.accent, "border-width": 5 },
+    },
+    {
+      selector: "node.route-origin",
+      style: { "background-color": p.accent, "border-color": p.amber, "border-width": 4 },
+    },
+    {
+      selector: "edge.route",
+      style: {
+        width: 5,
+        "line-color": p.accent,
+        "target-arrow-color": p.accent,
+        "source-arrow-color": p.accent,
+        "target-arrow-shape": "triangle",
+        "source-arrow-shape": "none",
+        color: p.ink,
+        "font-weight": "bold",
+      },
+    },
+    {
+      selector: "edge.route.route-reverse",
+      style: { "target-arrow-shape": "none", "source-arrow-shape": "triangle" },
+    },
+    {
+      selector: "edge.route-alt",
+      style: {
+        width: 3,
+        "line-style": "dashed",
+        "line-dash-pattern": [8, 6],
+        "line-color": p.amber,
+        "target-arrow-color": p.amber,
+        color: p.amber,
+        "text-background-color": p.amberSoft,
+      },
+    },
     {
       selector: "edge.draft",
       style: {
