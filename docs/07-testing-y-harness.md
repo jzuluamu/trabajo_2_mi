@@ -24,8 +24,17 @@ La consola web (`services/web`, [ADR 0007](adr/0007-consola-web-react-bff.md)) t
 | Lint | `eslint` con `typescript-eslint` `strictTypeChecked`, `react-hooks` y `--max-warnings 0` | hay errores de estilo, tipos inseguros (`any`) o reglas de hooks |
 | Formato | `prettier --check` | el código no está formateado |
 | Tipos | `tsc` estricto (`npm run typecheck`: SPA, BFF y configuración) | hay errores de tipos |
-| Dependencias | `npm audit` sobre `package-lock.json` | hay un CVE conocido |
+| Dependencias | `npm audit --omit=dev` y `npm audit --audit-level=critical` sobre `package-lock.json` | hay un CVE conocido en las dependencias de producción, o uno **crítico** en las de desarrollo (excepción temporal, abajo) |
 | Pruebas | `vitest` + `@vitest/coverage-v8` | falla una prueba o la cobertura de líneas, ramas, funciones o sentencias queda **< 85 %** |
+
+> **Excepción temporal de `npm audit` (2026-11-18).** `picomatch` tiene un aviso alto
+> ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)) sin versión corregida
+> publicada: todas sus versiones están afectadas. Solo lo usan las herramientas de desarrollo
+> (Vite, Vitest y typescript-eslint) y **no llega a la imagen de producción** (`npm ci --omit=dev`).
+> Mientras tanto, el harness audita sin excepciones las dependencias de producción
+> (`npm audit --omit=dev`) y, en las de desarrollo, bloquea solo lo crítico. Cuando `picomatch`
+> publique el arreglo, se agrega a `overrides` si hace falta y `scripts/check.sh` vuelve a
+> `npm audit` sin opciones.
 
 En network-service, `make test-network` levanta además un **PostgreSQL efímero** (`network-db` en `docker-compose.test.yml`) y define `TEST_DATABASE_URL`. Así **se ejecutan** las pruebas de `tests/integration/` (migraciones y repositorio SQL). Al terminar, el contenedor se elimina. Sin esa variable, por ejemplo en una corrida local con `uv run pytest`, esas pruebas se omiten (`SKIPPED`).
 
