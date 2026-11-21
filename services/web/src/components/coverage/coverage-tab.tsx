@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { ChevronDown, Loader2, Radar } from "lucide-react";
 import { useMemo, useState, type SubmitEvent } from "react";
 
-import { CoverageResult } from "@/components/coverage/coverage-result";
+import { CoverageResult, ZoneVerdict } from "@/components/coverage/coverage-result";
 import { FormError, SelectField } from "@/components/form-fields";
 import { GraphLegend } from "@/components/graph-legend";
 import { NetworkGraph } from "@/components/network-graph";
@@ -37,6 +37,7 @@ export function CoverageTab({ network }: { network: Network }) {
       api.coverage(origin, target, withTrace),
   });
   const report = query.data;
+  const nameOf = (id: string) => network.nodes.find((node) => node.id === id)?.name ?? id;
   const overlay = useMemo(() => (report ? coverageOverlay(report) : null), [report]);
   const chosenBase = base !== null && bases.some((b) => b.id === base) ? base : (bases[0]?.id ?? "");
 
@@ -127,6 +128,13 @@ export function CoverageTab({ network }: { network: Network }) {
               <p className="text-lg font-medium tracking-tight text-pretty" role="status">
                 {coverageSummary(network, report)}
               </p>
+            )}
+            {report?.zone && (
+              <ZoneVerdict
+                zone={report.zone}
+                name={nameOf(report.zone.id)}
+                origin={nameOf(report.base)}
+              />
             )}
             <Card className="gap-0 overflow-hidden py-0">
               <NetworkGraph

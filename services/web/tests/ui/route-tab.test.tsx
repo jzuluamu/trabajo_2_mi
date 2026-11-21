@@ -175,3 +175,33 @@ describe("pestaña Menor costo", () => {
     expect(screen.queryByRole("button", { name: "Ver ruta" })).not.toBeInTheDocument();
   });
 });
+
+describe("pestaña Menor costo · avisos visibles", () => {
+  it("el aviso de 'no hay ruta' y la comparación aparecen arriba del mapa", async () => {
+    const { user } = await openRoutes();
+    await choose(user, "Desde", "Base Norte");
+    await choose(user, "Hasta", "Fuente");
+    await user.click(screen.getByRole("button", { name: "Ver ruta" }));
+    const noRoute = await screen.findByText("No hay ruta en ese sentido");
+    const before = (el: Element) =>
+      el.compareDocumentPosition(screen.getByTestId("network-graph")) &
+      Node.DOCUMENT_POSITION_FOLLOWING;
+    expect(before(noRoute)).toBeTruthy();
+
+    await choose(user, "Hasta", "Centro");
+    await user.click(screen.getByRole("button", { name: "Ver ruta" }));
+    expect(before(await screen.findByText("Menos tramos no siempre es más rápido"))).toBeTruthy();
+  });
+
+  it("el aviso de zona no atendible aparece arriba del mapa", async () => {
+    const { user } = await openRoutes();
+    await user.click(screen.getByRole("tab", { name: "Mejor base" }));
+    await choose(user, "Zona a atender", "Fuente");
+    await user.click(screen.getByRole("button", { name: "Buscar base" }));
+    const notice = await screen.findByText("No se puede atender esta zona");
+    expect(
+      notice.compareDocumentPosition(screen.getByTestId("network-graph")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+});

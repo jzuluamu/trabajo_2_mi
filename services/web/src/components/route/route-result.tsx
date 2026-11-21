@@ -12,7 +12,6 @@ import {
   dijkstraTraceRows,
   fewestHopsComparison,
   itinerary,
-  routeSummary,
   type DijkstraTraceRow,
   type RouteOverlay,
 } from "@/lib/route-format";
@@ -90,6 +89,30 @@ function DijkstraTrace({ network, trace }: { network: Network; trace: TraceStep[
   );
 }
 
+/** Aviso de la ruta (sin camino, o menos tramos no es más rápido). Va arriba del mapa. */
+export function RouteNotice({ network, report }: { network: Network; report: RouteReport }) {
+  if (!report.found) {
+    return (
+      <Alert variant="warning" role="status">
+        <MapPinOff aria-hidden />
+        <AlertTitle>No hay ruta en ese sentido</AlertTitle>
+        <AlertDescription>
+          No es un error: así está la red hoy. Pruebe con otro destino o con «Invertir el sentido».
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  const comparison = fewestHopsComparison(network, report);
+  if (!comparison) return null;
+  return (
+    <Alert role="note">
+      <Clock aria-hidden />
+      <AlertTitle>Menos tramos no siempre es más rápido</AlertTitle>
+      <AlertDescription>{comparison}</AlertDescription>
+    </Alert>
+  );
+}
+
 export function RouteResult({
   network,
   report,
@@ -99,29 +122,29 @@ export function RouteResult({
   report: RouteReport;
   overlay: RouteOverlay | null;
 }) {
-  const comparison = fewestHopsComparison(network, report);
   return (
     <div className="space-y-6">
-      {!report.found ? (
-        <Alert variant="warning" role="status">
-          <MapPinOff aria-hidden />
-          <AlertTitle>No hay ruta en ese sentido</AlertTitle>
-          <AlertDescription>
-            {routeSummary(network, report)} No es un error: así está la red hoy.
-          </AlertDescription>
-        </Alert>
-      ) : (
-        comparison && (
-          <Alert role="note">
-            <Clock aria-hidden />
-            <AlertTitle>Menos tramos no siempre es más rápido</AlertTitle>
-            <AlertDescription>{comparison}</AlertDescription>
-          </Alert>
-        )
-      )}
       {overlay && <Itinerary network={network} overlay={overlay} />}
       <DijkstraTrace network={network} trace={report.trace} />
     </div>
+  );
+}
+
+/** Aviso cuando ninguna base con técnico puede atender la zona. Va arriba del mapa. */
+export function AttentionNotice({
+  network,
+  report,
+}: {
+  network: Network;
+  report: AttentionReport;
+}) {
+  if (report.found) return null;
+  return (
+    <Alert variant="warning" role="status">
+      <TriangleAlert aria-hidden />
+      <AlertTitle>No se puede atender esta zona</AlertTitle>
+      <AlertDescription>{attentionSummary(network, report)}</AlertDescription>
+    </Alert>
   );
 }
 
@@ -137,13 +160,6 @@ export function AttentionResult({
   const alternatives = alternativeRows(network, report);
   return (
     <div className="space-y-6">
-      {!report.found && (
-        <Alert variant="warning" role="status">
-          <TriangleAlert aria-hidden />
-          <AlertTitle>No se puede atender esta zona</AlertTitle>
-          <AlertDescription>{attentionSummary(network, report)}</AlertDescription>
-        </Alert>
-      )}
       {overlay && <Itinerary network={network} overlay={overlay} />}
       {alternatives.length > 0 && (
         <section className="space-y-3" aria-labelledby="alternatives-title">
