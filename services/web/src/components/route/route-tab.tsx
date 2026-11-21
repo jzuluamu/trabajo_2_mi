@@ -5,7 +5,12 @@ import { useMemo, useState, type SubmitEvent } from "react";
 import { FormError, SelectField } from "@/components/form-fields";
 import { GraphLegend } from "@/components/graph-legend";
 import { NetworkGraph } from "@/components/network-graph";
-import { AttentionResult, RouteResult } from "@/components/route/route-result";
+import {
+  AttentionNotice,
+  AttentionResult,
+  RouteNotice,
+  RouteResult,
+} from "@/components/route/route-result";
 import { SectionHeader } from "@/components/section-header";
 import { EmptyState } from "@/components/states";
 import { Button } from "@/components/ui/button";
@@ -256,6 +261,10 @@ export function RouteTab({ network }: { network: Network }) {
               <p className="text-lg font-medium tracking-tight text-pretty" role="status">
                 {summary}
               </p>
+            )}
+            {mode === "route" && route && <RouteNotice network={network} report={route} />}
+            {mode === "attention" && attention && (
+              <AttentionNotice network={network} report={attention} />
             )}
             <Card className="gap-0 overflow-hidden py-0">
               <NetworkGraph

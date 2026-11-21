@@ -127,3 +127,14 @@ describe("pestaña Cobertura", () => {
     expect(screen.getByText("Todavía no hay bases")).toBeInTheDocument();
   });
 });
+
+describe("pestaña Cobertura · aviso visible", () => {
+  it("el veredicto de la zona aparece arriba del mapa, sin tener que bajar", async () => {
+    const { user } = await openCoverage();
+    await choose(user, "¿Revisar una zona en particular?", "Fuente");
+    await user.click(screen.getByRole("button", { name: "Ver cobertura" }));
+    const verdict = await screen.findByText("Fuente no está cubierta");
+    const map = screen.getByTestId("network-graph");
+    expect(verdict.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});

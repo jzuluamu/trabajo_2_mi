@@ -10,7 +10,16 @@ import type { CoverageReport, Network, ZoneCheck } from "@/lib/types";
 
 const TRACE_ACTIONS: Record<string, string> = { Visita: "Se visita", Encola: "Se agrega a la fila" };
 
-function ZoneVerdict({ zone, name, origin }: { zone: ZoneCheck; name: string; origin: string }) {
+/** Veredicto de la zona consultada. La pestaña lo muestra arriba del mapa, para verlo sin bajar. */
+export function ZoneVerdict({
+  zone,
+  name,
+  origin,
+}: {
+  zone: ZoneCheck;
+  name: string;
+  origin: string;
+}) {
   const hops = zone.hops ?? 0;
   return (
     <Alert variant={zone.covered ? "success" : "warning"} role="status">
@@ -36,10 +45,6 @@ export function CoverageResult({ network, report }: { network: Network; report: 
 
   return (
     <div className="space-y-6">
-      {report.zone && (
-        <ZoneVerdict zone={report.zone} name={nameOf(report.zone.id)} origin={nameOf(report.base)} />
-      )}
-
       <section className="space-y-3" aria-labelledby="reachable-title">
         <h3 id="reachable-title" className="text-sm font-medium">
           Lugares a su alcance ({reachable.length})

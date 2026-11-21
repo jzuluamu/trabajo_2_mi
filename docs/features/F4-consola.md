@@ -28,7 +28,7 @@ SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), Tan
 - [x] **Cobertura** (ambos roles):
   - base y zona opcional, con traza opcional ("Incluir el recorrido paso a paso");
   - **resumen en una frase**: "Base Norte llega a 6 zonas y 1 base. Quedan sin cobertura Fuente e Isla.";
-  - veredicto de la zona con nombres: verde con "Centro está cubierta / Se llega desde Base Norte en 1 tramo", ámbar con "Fuente no está cubierta" (no es un error);
+  - veredicto de la zona con nombres: verde con "Centro está cubierta / Se llega desde Base Norte en 1 tramo", ámbar con "Fuente no está cubierta" (no es un error). Aparece **arriba del mapa**, junto al resumen, para verse sin bajar (2026-11-20);
   - lugares alcanzados agrupados por distancia ("A 1 tramo: Alameda, Centro") y zonas sin cobertura como etiquetas;
   - "¿Cómo se calcula?" explica la regla (BFS) sin imponer la jerga;
   - **la cobertura se resalta en el mapa:** origen con anillo ámbar, nodos alcanzados coloreados por tramos con la etiqueta "N tramos", zonas sin cobertura punteadas con "sin cobertura", y el resto atenuado. Leyenda propia.
@@ -49,7 +49,7 @@ SPA en React 19 + Vite + TypeScript, con Tailwind CSS v4, shadcn/ui (Radix), Tan
   - si el camino de menos tramos es otro, se dibuja punteado en ámbar y se explica: "El camino de menos tramos (Base Norte → Centro, 1 tramo) tarda 30 min: esta ruta ahorra 15 min.";
   - frase principal con nombres ("De Base Norte a Centro: 15 min en 3 tramos, por Alameda y Bosque.") e itinerario numerado tramo a tramo;
   - *Mejor base*: elige la zona; recomienda la base con técnico disponible ("Enviar desde Base Sur (Marta): 20 min en 2 tramos."), pinta su ruta y lista las otras bases. Si no se puede atender, lo explica con nombres;
-  - sin ruta o sin base que atienda, el aviso es ámbar: es una respuesta válida, no un error.
+  - sin ruta o sin base que atienda, el aviso es ámbar: es una respuesta válida, no un error. Estos avisos, y el de "menos tramos no siempre es más rápido", aparecen **arriba del mapa**, junto al resumen (2026-11-20).
 - [x] La pestaña activa queda en la URL (`#red`, `#cobertura`, `#ruta`, `#configurar`).
 - [x] Las posiciones del mapa se conservan al recargar la red y entre pestañas.
 
